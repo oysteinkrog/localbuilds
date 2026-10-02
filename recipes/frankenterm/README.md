@@ -6,13 +6,20 @@ package installs `/usr/bin/frankenterm-gui` and `/usr/bin/frankenterm-mux-server
 
 ## Fork branches
 
+`oystein/main` is the integration branch. It holds exactly what is installed: the pin is
+always a commit on `oystein/main`. Work happens on topic branches, which are merged into
+`oystein/main` before a build. The fork's `main` and `master` only mirror upstream, so
+syncing upstream stays a fast-forward.
+
 | Branch | What it adds |
 |---|---|
-| `oystein/linux-setup` | Wayland build fix, vertical tab bar with bell colours, move tab to window, `cli spawn` and `cli list`, tab close and spawn fixes |
-| `oystein/tab-reorder-sync` | Tab order kept in sync with the mux server (in progress, branched from `oystein/linux-setup`) |
+| `oystein/main` | Integration branch: every topic branch below, merged. The installed build |
+| `oystein/linux-setup` | Wayland build fix, vertical tab bar with bell colours, move tab to window, `cli spawn` and `cli list`, tab close and spawn fixes, mux window guard deadlock fixes, explicit palette fix |
+| `oystein/tab-reorder-sync` | GUI tab moves committed on the mux server, and `cli move-tab` |
+| `pr/*` | One upstream PR each, rebased onto upstream `main`. Not built here |
 
-The pin is the commit the installed package is built from. Move it with
-`localbuild bump frankenterm <commit>` once that commit is pushed.
+To ship a change: commit it on a topic branch, merge that into `oystein/main`, push both,
+then `localbuild bump frankenterm <oystein/main commit>`, build, commit the recipe, install.
 
 ## Notes
 
