@@ -12,7 +12,7 @@ added=$(git diff --cached -U0 --no-color | grep -E '^\+[^+]' || true)
 fail=0
 check() {  # check <label> <extended regex> [grep flags]
     local hits
-    hits=$(printf '%s\n' "$added" | grep -nE $3 -- "$2" || true)
+    hits=$(printf '%s\n' "$added" | grep -nE ${3:-} -- "$2" || true)
     if [ -n "$hits" ]; then
         echo "pre-commit: $1:" >&2
         printf '%s\n' "$hits" | head -5 >&2
