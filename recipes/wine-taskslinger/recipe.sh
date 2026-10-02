@@ -14,7 +14,7 @@ MODE=fork
 KIND=tree
 SRC=$HOME/src/wine
 BASE=wine-11.18
-PIN=d05003b8443bea51cd9c82f36d112e634508bd5b
+PIN=cb0713657deaee31933e851fddc68c4d3bf28314
 
 lb_install_root() { echo "$HOME/.local/share/taskslinger-wine"; }
 
@@ -32,8 +32,9 @@ lb_build() {
 
     mkdir -p build
     if [ ! -f build/Makefile ]; then
-        (cd build && ../src/configure --enable-archs=x86_64 --disable-tests \
-            --without-x --without-freetype --without-wayland --without-vulkan --without-opengl)
+        # X11, FreeType, Vulkan and OpenGL stay on: win32u and winex11 built without them
+        # lose fonts and Direct3D, and winex11.so is not built at all without X.
+        (cd build && ../src/configure --enable-archs=x86_64 --disable-tests --without-wayland)
     fi
     local mods=() m
     mapfile -t mods < <(_wine_modules)

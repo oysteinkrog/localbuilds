@@ -15,6 +15,10 @@ build copies it and replaces only the modules the branch changes.
 |---|---|
 | user32 | Adds `GetProcessUIContextInformation` (semi-stub, reports a desktop app) |
 | kernelbase, kernel32 | Adds `GetApplicationUserModelId` (returns `APPMODEL_ERROR_NO_APPLICATION`) |
+| win32u, winex11 | A window that draws its own title bar keeps its whole client area visible, and the window manager draws only a border. Fixes the mouse offset under the KDE frame and the double title bar |
+| win32u | Moves the maximize position and size an app returns from `WM_GETMINMAXINFO` to the monitor the window is on, as Windows does. Fixes maximize on any monitor other than the primary |
+
+The launcher sets `Decorated=Y` (window manager frame on), which these two commits rely on.
 
 To change it: commit on the branch in `~/src/wine`, `git push fork taskslinger/wine-11.18`,
 `localbuild bump wine-taskslinger <commit>`, build, commit the recipe, install.
@@ -23,8 +27,6 @@ To change it: commit on the branch in `~/src/wine`, `git push fork taskslinger/w
 
 - GPU and disk graphs stay at 0, and the process list shows only Wine processes. Wine does not
   report Linux GPU or disk counters.
-- Window frame, maximize and mouse offset: being worked on in a Wine change to how undecorated
-  windows with a custom title bar are handled.
 
 ## Related
 
