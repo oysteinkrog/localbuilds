@@ -1,0 +1,23 @@
+# Built by localbuild from the worktree in $LB_SRCDIR; not for use with plain makepkg.
+pkgname=cass-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="cass agent session search (oysteinkrog fork), built by localbuild"
+arch=(x86_64)
+url="https://github.com/oysteinkrog/coding_agent_session_search"
+license=(MIT)
+makedepends=(rustup)
+provides=(cass)
+options=(!lto !debug)
+
+build() {
+    cd "$LB_SRCDIR"
+    # One target dir per recipe, so builds of nearby commits reuse compiled crates.
+    export CARGO_TARGET_DIR="$HOME/.cache/build/cass/target"
+    nice -n 5 cargo build --release --locked --bin cass
+}
+
+package() {
+    install -Dm755 "$HOME/.cache/build/cass/target/release/cass" "$pkgdir/usr/bin/cass"
+    install -Dm644 "$LB_SRCDIR/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
