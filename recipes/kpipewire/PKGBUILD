@@ -1,0 +1,26 @@
+# Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
+pkgname=kpipewire-krdp-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="KPipeWire 6.8 in /opt/krdp-local, private to krdp-local, built by localbuild"
+arch=(x86_64)
+url="https://github.com/oysteinkrog/kpipewire"
+license=(LGPL-2.0-or-later)
+depends=(ffmpeg glibc kcoreaddons ki18n libdrm libepoxy libgcc libpipewire libstdc++
+         libva mesa qt6-base qt6-declarative)
+makedepends=(extra-cmake-modules plasma-wayland-protocols)
+options=(!debug)
+
+build() {
+    cmake -B build -S "$LB_SRCDIR" -G Ninja \
+        -DCMAKE_BUILD_TYPE=None \
+        -DCMAKE_INSTALL_PREFIX=/opt/krdp-local \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_INSTALL_RPATH=/opt/krdp-local/lib \
+        -DBUILD_TESTING=OFF
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
