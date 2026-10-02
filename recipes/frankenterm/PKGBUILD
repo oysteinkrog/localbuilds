@@ -1,0 +1,26 @@
+# Built by localbuild from the patched worktree in $LB_SRCDIR; not for use with plain makepkg.
+pkgname=frankenterm-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="FrankenTerm terminal (oysteinkrog fork), built by localbuild"
+arch=(x86_64)
+url="https://github.com/oysteinkrog/frankenterm"
+license=(MIT)
+depends=(fontconfig libxkbcommon wayland)
+makedepends=(rustup)
+provides=(frankenterm)
+options=(!lto !debug)
+
+build() {
+    cd "$LB_SRCDIR"
+    # One target dir per recipe, so builds of nearby commits reuse compiled crates.
+    export CARGO_TARGET_DIR="$HOME/.cache/build/frankenterm/target"
+    cargo build --release --locked -p frankenterm-gui -p frankenterm-mux-server
+}
+
+package() {
+    local t="$HOME/.cache/build/frankenterm/target/release"
+    install -Dm755 "$t/frankenterm-gui" "$pkgdir/usr/bin/frankenterm-gui"
+    install -Dm755 "$t/frankenterm-mux-server" "$pkgdir/usr/bin/frankenterm-mux-server"
+    install -Dm644 "$LB_SRCDIR/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

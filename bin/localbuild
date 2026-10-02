@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# localbuild: build and install patched open source software from the recipes in this repo.
+# Run `localbuild help` for the commands. README.md explains the layout and the rules.
+set -euo pipefail
+
+LB_ROOT=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
+. "$LB_ROOT/lib/common.sh"
+
+usage() {
+    cat <<'EOF'
+localbuild status                       every recipe: pin, installed build, problems
+localbuild build <name>[@variant] [--dev]
+                                        build in a fresh worktree under ~/.cache/build
+localbuild install <name>[@variant]     install the build that matches the recipe as committed
+localbuild rollback <name>[@variant]    point `current` back at the previous build (tree kind)
+localbuild shell <name>[@variant]       print the source worktree of the newest build, to edit in
+localbuild patch-save <name>[@variant] <slug> -m <message>
+                                        save edits in that worktree as a new patch in the series
+localbuild bump <name> <pin>            change the pinned tag or commit
+localbuild check                        warn when the system has moved under a recipe
+localbuild index                        regenerate INDEX.md
+EOF
+}
+
+cmd=${1:-help}; shift || true
+case "$cmd" in
+    status)     lb_status ;;
+    build)      lb_cmd_build "$@" ;;
+    install)    lb_cmd_install "$@" ;;
+    rollback)   lb_cmd_rollback "$@" ;;
+    shell)      lb_cmd_shell "$@" ;;
+    patch-save) lb_cmd_patch_save "$@" ;;
+    bump)       lb_cmd_bump "$@" ;;
+    check)      lb_cmd_check ;;
+    index)      lb_cmd_index ;;
+    help|-h|--help) usage ;;
+    *) usage >&2; exit 2 ;;
+esac

@@ -1,0 +1,69 @@
+From ae35a6376c5ce60f9aa0a2d7d5f2d337dd4d000e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=C3=98ystein=20Krog?= <oystein.krog@gmail.com>
+Date: Fri, 2 Oct 2026 12:27:24 +0200
+Subject: [PATCH 3/5] crypt32: Export the private key of a certificate loaded
+ from a PFX.
+
+.NET exports a certificate it loaded from a PFX, with its private key, to hand
+it to MsQuic. PFXExportCertStoreEx left the key out, so the TLS handshake
+failed with the alert UserCanceled. Export the key and set its key spec to
+AT_KEYEXCHANGE.
+
+Upstream-Status: local-only
+---
+ dlls/crypt32/pfx.c | 31 ++++++++++++++++++++++++-------
+ 1 file changed, 24 insertions(+), 7 deletions(-)
+
+diff --git a/dlls/crypt32/pfx.c b/dlls/crypt32/pfx.c
+index 81f0faebd2..27b3745a14 100644
+--- a/dlls/crypt32/pfx.c
++++ b/dlls/crypt32/pfx.c
+@@ -135,8 +135,9 @@ static BOOL set_key_prov_info( const void *ctx, HCRYPTPROV prov )
+     prov_info->dwFlags     = 0;
+     prov_info->cProvParam  = 0;
+     prov_info->rgProvParam = NULL;
+-    size = sizeof(prov_info->dwKeySpec);
+-    CryptGetProvParam( prov, PP_KEYSPEC, (BYTE *)&prov_info->dwKeySpec, &size, 0 );
++    /* The key was imported as the exchange key (see set_key_context). PP_KEYSPEC would give the
++     * specs the provider supports, AT_KEYEXCHANGE | AT_SIGNATURE, which is no key's spec. */
++    prov_info->dwKeySpec   = AT_KEYEXCHANGE;
+ 
+     ret = CertSetCertificateContextProperty( ctx, CERT_KEY_PROV_INFO_PROP_ID, 0, prov_info );
+ 
+@@ -381,12 +382,28 @@ BOOL WINAPI PFXExportCertStoreEx( HCERTSTORE store, CRYPT_DATA_BLOB *pfx, const
+         key_ctx_size = sizeof(key_ctx);
+         if (!CertGetCertificateContextProperty( cert, CERT_KEY_CONTEXT_PROP_ID, &key_ctx, &key_ctx_size ))
+         {
+-            WARN( "no key context on certificate, error %08lx\n", GetLastError() );
+-            if (flags & REPORT_NOT_ABLE_TO_EXPORT_PRIVATE_KEY)
++            HCRYPTPROV_OR_NCRYPT_KEY_HANDLE prov = 0;
++            DWORD spec = 0;
++            BOOL free_prov = FALSE;
++
++            /* A certificate imported from a PFX names its key container (CERT_KEY_PROV_INFO_PROP_ID)
++             * but has no open key. Open it for this export only: a cached CAPI handle would be
++             * handed to later callers that ask for an NCrypt key. */
++            if (CryptAcquireCertificatePrivateKey( cert, 0, NULL, &prov, &spec, &free_prov ) &&
++                (spec == AT_KEYEXCHANGE || spec == AT_SIGNATURE))
++                key_blob = export_capi_key( prov, spec, &key_blob_size );
++            /* Flags 0 asks for a CAPI key, but release an NCrypt one correctly all the same. */
++            if (free_prov && spec == CERT_NCRYPT_KEY_SPEC) NCryptFreeObject( prov );
++            else if (free_prov) CryptReleaseContext( prov, 0 );
++            if (!key_blob)
+             {
+-                SetLastError( NTE_NOT_FOUND );
+-                CertFreeCertificateContext( cert );
+-                return FALSE;
++                WARN( "no key on certificate, error %08lx\n", GetLastError() );
++                if (flags & REPORT_NOT_ABLE_TO_EXPORT_PRIVATE_KEY)
++                {
++                    SetLastError( NTE_NOT_FOUND );
++                    CertFreeCertificateContext( cert );
++                    return FALSE;
++                }
+             }
+         }
+         else if (key_ctx.dwKeySpec == CERT_NCRYPT_KEY_SPEC)
+-- 
+2.55.0
+

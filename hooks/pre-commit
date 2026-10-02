@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Block commits that add private details to this public repo: LAN addresses, MAC addresses,
+# and any word in the private list (company and product names, hostnames). The list lives
+# outside the repo, in LOCALBUILDS_PRIVATE_WORDS (default ~/work/Life/setup/localbuilds/private-words.txt),
+# one case-insensitive word or regex per line.
+set -euo pipefail
+
+list=${LOCALBUILDS_PRIVATE_WORDS:-$HOME/work/Life/setup/localbuilds/private-words.txt}
+added=$(git diff --cached -U0 --no-color | grep -E '^\+[^+]' || true)
+[ -z "$added" ] && exit 0
+
+fail=0
+check() {  # check <label> <extended regex> [grep flags]
+    local hits
+    hits=$(printf '%s\n' "$added" | grep -nE $3 -- "$2" || true)
+    if [ -n "$hits" ]; then
+        echo "pre-commit: $1:" >&2
+        printf '%s\n' "$hits" | head -5 >&2
+        fail=1
+    fi
+}
+
+check "private IPv4 address" '(^|[^0-9.])(10\.[0-9]{1,3}|192\.168|172\.(1[6-9]|2[0-9]|3[01]))\.[0-9]{1,3}(\.[0-9]{1,3})?([^0-9.]|$)'
+check "MAC address" '([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}'
+if [ -f "$list" ]; then
+    words=$(grep -vE '^\s*(#|$)' "$list" | paste -sd'|' -)
+    [ -n "$words" ] && check "word from the private list" "($words)" -i
+else
+    echo "pre-commit: no private word list at $list; only the address checks ran" >&2
+fi
+
+if [ "$fail" = 1 ]; then
+    echo "pre-commit: move these details out of this public repo, or rewrite them." >&2
+    exit 1
+fi

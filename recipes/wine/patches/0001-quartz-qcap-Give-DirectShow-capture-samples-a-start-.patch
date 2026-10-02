@@ -1,0 +1,123 @@
+From e95951f986167b2ed6741ba54b5e9732994eb2e6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=C3=98ystein=20Krog?= <oystein.krog@gmail.com>
+Date: Fri, 2 Oct 2026 12:27:23 +0200
+Subject: [PATCH 1/5] quartz, qcap: Give DirectShow capture samples a start
+ time.
+
+IGraphConfig::GetStartTime was a stub returning E_NOTIMPL. Apps that read the
+graph start time with it drop every sample while it has none, so a webcam shows
+no frames. It now returns the start time the graph passed to its filters.
+
+The webcam capture filter never set sample times. It now stamps each sample
+with the stream time it was captured at, as Windows capture filters do, and
+holds back frames read before the stream start.
+
+Upstream-Status: local-only
+---
+ dlls/qcap/vfwcapture.c    | 27 +++++++++++++++++++++++++++
+ dlls/quartz/filtergraph.c | 21 ++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/qcap/vfwcapture.c b/dlls/qcap/vfwcapture.c
+index 97f79c9f52..50ad80a22e 100644
+--- a/dlls/qcap/vfwcapture.c
++++ b/dlls/qcap/vfwcapture.c
+@@ -48,6 +48,8 @@ struct vfw_capture
+     CRITICAL_SECTION state_cs;
+ 
+     HANDLE thread;
++    /* Reference time the stream was started at, protected by state_cs. */
++    REFERENCE_TIME stream_start;
+ };
+ 
+ static inline struct vfw_capture *impl_from_strmbase_filter(struct strmbase_filter *iface)
+@@ -180,6 +182,30 @@ static DWORD WINAPI stream_thread(void *arg)
+             break;
+         }
+ 
++        if (filter->filter.clock)
++        {
++            const VIDEOINFOHEADER *format = (const VIDEOINFOHEADER *)filter->source.pin.mt.pbFormat;
++            REFERENCE_TIME now, start, end;
++
++            /* Stamp the sample with the stream time it was captured at, as
++             * native capture filters do. */
++            IReferenceClock_GetTime(filter->filter.clock, &now);
++            EnterCriticalSection(&filter->state_cs);
++            start = now - filter->stream_start;
++            LeaveCriticalSection(&filter->state_cs);
++
++            /* The graph starts the stream slightly in the future; frames read
++             * before then belong to no stream time yet. */
++            if (start < 0)
++            {
++                IMediaSample_Release(sample);
++                continue;
++            }
++
++            end = start + (format->AvgTimePerFrame > 0 ? format->AvgTimePerFrame : 1);
++            IMediaSample_SetTime(sample, &start, &end);
++        }
++
+         hr = IMemInputPin_Receive(filter->source.pMemInputPin, sample);
+         IMediaSample_Release(sample);
+         if (FAILED(hr))
+@@ -229,6 +255,7 @@ static HRESULT vfw_capture_start_stream(struct strmbase_filter *iface, REFERENCE
+     }
+ 
+     EnterCriticalSection(&filter->state_cs);
++    filter->stream_start = time;
+     filter->state = State_Running;
+     LeaveCriticalSection(&filter->state_cs);
+     WakeConditionVariable(&filter->state_cv);
+diff --git a/dlls/quartz/filtergraph.c b/dlls/quartz/filtergraph.c
+index d495b7c076..475b5d2da9 100644
+--- a/dlls/quartz/filtergraph.c
++++ b/dlls/quartz/filtergraph.c
+@@ -159,6 +159,8 @@ struct filter_graph
+     /* Respectively: the last timestamp at which we started streaming, and the
+      * current offset within the stream. */
+     REFERENCE_TIME stream_start, stream_elapsed;
++    /* The start time most recently passed to IBaseFilter::Run(). */
++    REFERENCE_TIME filter_start;
+     REFERENCE_TIME stream_stop;
+     LONGLONG current_pos;
+ 
+@@ -1823,6 +1825,8 @@ static HRESULT graph_start(struct filter_graph *graph, REFERENCE_TIME stream_sta
+         stream_start += 200 * 10000;
+     }
+ 
++    graph->filter_start = stream_start;
++
+     if (SUCCEEDED(IMediaSeeking_GetStopPosition(&graph->IMediaSeeking_iface, &stream_stop)))
+         graph->stream_stop = stream_stop;
+ 
+@@ -5821,11 +5825,22 @@ static HRESULT WINAPI GraphConfig_RemoveFilterFromCache(IGraphConfig *iface, IBa
+ 
+ static HRESULT WINAPI GraphConfig_GetStartTime(IGraphConfig *iface, REFERENCE_TIME *prtStart)
+ {
+-    struct filter_graph *This = impl_from_IGraphConfig(iface);
++    struct filter_graph *graph = impl_from_IGraphConfig(iface);
++    HRESULT hr = S_OK;
+ 
+-    FIXME("(%p)->(%p): stub!\n", This, prtStart);
++    TRACE("graph %p, start %p.\n", graph, prtStart);
+ 
+-    return E_NOTIMPL;
++    if (!prtStart)
++        return E_POINTER;
++
++    EnterCriticalSection(&graph->cs);
++    if (graph->state == State_Running)
++        *prtStart = graph->filter_start;
++    else
++        hr = VFW_E_WRONG_STATE;
++    LeaveCriticalSection(&graph->cs);
++
++    return hr;
+ }
+ 
+ static HRESULT WINAPI GraphConfig_PushThroughData(IGraphConfig *iface, IPin *pOutputPin,
+-- 
+2.55.0
+

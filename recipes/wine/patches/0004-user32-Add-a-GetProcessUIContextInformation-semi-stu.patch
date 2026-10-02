@@ -1,0 +1,85 @@
+From 9408e68c62f01560b5372b4a30fba815a7341f40 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=C3=98ystein=20Krog?= <oystein.krog@gmail.com>
+Date: Fri, 2 Oct 2026 12:27:24 +0200
+Subject: [PATCH 4/5] user32: Add a GetProcessUIContextInformation semi-stub.
+
+TaskSlinger 0.9.2 calls it at startup and aborted on the unimplemented stub.
+Report every process as a desktop app (PROCESS_UICONTEXT_DESKTOP).
+
+Upstream-Status: local-only
+---
+ dlls/user32/misc.c      | 17 +++++++++++++++++
+ dlls/user32/user32.spec |  2 +-
+ include/winuser.h       | 15 +++++++++++++++
+ 3 files changed, 33 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/user32/misc.c b/dlls/user32/misc.c
+index 0fa04b855d..c0029f6e42 100644
+--- a/dlls/user32/misc.c
++++ b/dlls/user32/misc.c
+@@ -550,6 +550,23 @@ BOOL WINAPI GetPointerFrameInfoHistory( UINT32 id, UINT32 *entries, UINT32 *poin
+     return NtUserGetPointerInfoList( id, PT_POINTER, 0, 0, sizeof(*info), entries, pointers, info );
+ }
+ 
++/**********************************************************************
++ *		GetProcessUIContextInformation (USER32.@)
++ */
++BOOL WINAPI GetProcessUIContextInformation( HANDLE process, PROCESS_UICONTEXT_INFORMATION *info )
++{
++    FIXME( "process %p, info %p semi-stub\n", process, info );
++
++    if (!info)
++    {
++        SetLastError( ERROR_INVALID_PARAMETER );
++        return FALSE;
++    }
++    info->processUIContext = PROCESS_UICONTEXT_DESKTOP;
++    info->flags = 0;
++    return TRUE;
++}
++
+ LRESULT WINAPI ImeWndProcA( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+ {
+     if (!imm_ime_wnd_proc) return DefWindowProcA(hwnd, msg, wParam, lParam);
+diff --git a/dlls/user32/user32.spec b/dlls/user32/user32.spec
+index 241b40054b..0b524bb719 100644
+--- a/dlls/user32/user32.spec
++++ b/dlls/user32/user32.spec
+@@ -32,7 +32,7 @@
+ 2518 stub @
+ 2519 stub -noname EnableMouseInputForCursorSuppression  # NtUserEnableMouseInputForCursorSuppression
+ 2520 stub -noname IsMouseInputEnabled  # NtUserIsMouseInputEnabled
+-2521 stub GetProcessUIContextInformation  # NtUserGetProcessUIContextInformation
++2521 stdcall GetProcessUIContextInformation(long ptr)
+ 2522 stub -noname SetBrokeredForeground  # NtUserSetBrokeredForeground
+ 2523 stub @
+ 2524 stub @
+diff --git a/include/winuser.h b/include/winuser.h
+index 32b07b387a..ce2165c607 100644
+--- a/include/winuser.h
++++ b/include/winuser.h
+@@ -4278,6 +4278,21 @@ WINUSERAPI BOOL        WINAPI GetPointerType(UINT32,POINTER_INPUT_TYPE*);
+ WINUSERAPI BOOL        WINAPI GetPointerCursorId(UINT32,UINT32*);
+ WINUSERAPI BOOL        WINAPI GetPointerInfo(UINT32,POINTER_INFO*);
+ WINUSERAPI BOOL        WINAPI GetPointerInfoHistory(UINT32,UINT32*,POINTER_INFO*);
++typedef enum _PROCESS_UICONTEXT
++{
++    PROCESS_UICONTEXT_DESKTOP,
++    PROCESS_UICONTEXT_IMMERSIVE,
++    PROCESS_UICONTEXT_IMMERSIVE_BROKER,
++    PROCESS_UICONTEXT_IMMERSIVE_BROWSER
++} PROCESS_UICONTEXT;
++
++typedef struct _PROCESS_UICONTEXT_INFORMATION
++{
++    PROCESS_UICONTEXT processUIContext;
++    DWORD flags;
++} PROCESS_UICONTEXT_INFORMATION, *PPROCESS_UICONTEXT_INFORMATION;
++
++WINUSERAPI BOOL        WINAPI GetProcessUIContextInformation(HANDLE,PROCESS_UICONTEXT_INFORMATION*);
+ WINUSERAPI BOOL        WINAPI GetPointerFrameInfo(UINT32,UINT32*,POINTER_INFO*);
+ WINUSERAPI BOOL        WINAPI GetPointerFrameInfoHistory(UINT32,UINT32*,UINT32*,POINTER_INFO*);
+ WINUSERAPI BOOL        WINAPI GetPointerTouchInfo(UINT32,POINTER_TOUCH_INFO*);
+-- 
+2.55.0
+
