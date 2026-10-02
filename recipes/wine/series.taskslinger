@@ -1,4 +1,0 @@
-# TaskSlinger 0.9.2 (Windows task manager) on top of the base series.
-@include series
-0004-user32-Add-a-GetProcessUIContextInformation-semi-stu.patch
-0005-kernelbase-Add-a-GetApplicationUserModelId-stub.patch

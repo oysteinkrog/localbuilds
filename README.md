@@ -32,10 +32,11 @@ Outside the repo:
 
 A recipe has one **mode**:
 
-- `patches`: apply the patch files in `series` on top of an upstream tag or commit. Use it
-  for a few small fixes.
-- `fork`: build a commit of my fork as it is. Use it when the changes are large or still
-  growing. The commit must be pushed to the fork before it can be installed.
+- `fork` (the default): build a commit of my GitHub fork as it is. Each change is a commit on
+  a branch of the fork, with a message that says why. The commit must be pushed before it can
+  be installed.
+- `patches`: apply the patch files in `series` on top of an upstream tag or commit. Use it only
+  when there is no git repository to fork.
 
 and one **kind**:
 
@@ -83,10 +84,12 @@ For a fork recipe, work in `~/src/<name>` on a branch, commit, push to the fork,
 
 ## Rules
 
-- No hostnames, IP addresses, serial numbers, account names or company product names in this
-  repo. The pre-commit hook checks for common cases. Enable it once per clone with
-  `git config core.hooksPath hooks`.
-- Each patch carries `Upstream-Status:` in its message: `local-only`, `submitted <link>` or
-  `merged <version>`. Drop a patch from the series when upstream has it.
+- No hostnames, IP addresses, serial numbers or account names in this repo. Links to company
+  forks and product names are fine. The pre-commit hook checks for common cases. Enable it
+  once per clone with `git config core.hooksPath hooks`.
+- Each commit or patch carries `Upstream-Status:` in its message: `local-only`,
+  `submitted <link>` or `merged <version>`. Drop it when upstream has it.
+- Changes that the company product needs live on `swing-catalyst/*` branches of the
+  InitialForce forks and are built by the company monorepo, not here.
 - `localbuild check` warns when the system has moved under a recipe, for example a Wine
   upgrade past the pinned release. It never rebuilds on its own.

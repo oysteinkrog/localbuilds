@@ -1,4 +1,0 @@
-# Fixes for apps that use DirectShow capture, MsQuic and PFX certificates.
-0001-quartz-qcap-Give-DirectShow-capture-samples-a-start-.patch
-0002-ws2_32-Accept-the-socket-options-MsQuic-sets-when-it.patch
-0003-crypt32-Export-the-private-key-of-a-certificate-load.patch
