@@ -10,7 +10,8 @@ and `~/.local/bin/cass-gpu` are symlinks to it for scripts that use the old path
 | Branch | What it is |
 |---|---|
 | `main-latest` | the pinned upstream commit, no local changes |
-| `gpu-embedding` | DirectML and CUDA embedding work, not built |
+| `gpu-embedding` | old fastembed/ONNX DirectML and CUDA work, based on a May commit; superseded |
+| `gpu-cuda-native` | candle CUDA embedding for the current pure-Rust embedder; built by the `cass-gpu` recipe |
 
 ## Notes
 
