@@ -15,6 +15,9 @@ build() {
     cd "$LB_SRCDIR"
     # One target dir per recipe, so builds of nearby commits reuse compiled crates.
     export CARGO_TARGET_DIR="$HOME/.cache/build/frankenterm/target"
+    # ~/.cargo/config.toml puts build.build-dir in the workspace. Each build here runs
+    # in a new worktree, so keep the intermediate files in the recipe target dir too.
+    export CARGO_BUILD_BUILD_DIR="$CARGO_TARGET_DIR"
     cargo build --release --locked -p frankenterm-gui -p frankenterm-mux-server
 }
 
