@@ -9,7 +9,7 @@ UPSTREAM=https://invent.kde.org/plasma/kpipewire.git
 FORK=https://github.com/oysteinkrog/kpipewire.git
 MODE=fork
 KIND=pkg
-PIN=319637f9bd5d93ce57bbcdb1b46482d128561847
+PIN=85478645977312c1ad6611578c2030c4b9ee8e12
 
 lb_pkgver() {
     echo "$(git -C "$LB_WORK/src" describe --tags --abbrev=0 | sed 's/^v//').g${LB_COMMIT:0:10}"
