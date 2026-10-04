@@ -15,6 +15,7 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | AudinStream: make the Remote Desktop microphone the default source while connected | apps record from the default source, so the client microphone went unused |
 | SessionController: run a hook with the client size when streaming a real monitor | `KRDP_OUTPUT_RESIZE_HOOK` gets the client's width and height |
 | Run the output resize hook with the client's desktop size at connect | fits the monitor at logon, not only when the client window is resized |
+| AudinStream: reopen the microphone channel when the client doesn't answer | mstsc rejects AUDIO_INPUT when it is opened within about 100 ms of connect, which left the microphone off for the session |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
