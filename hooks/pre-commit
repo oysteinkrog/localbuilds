@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Block commits that add private details to this public repo: LAN addresses, MAC addresses,
 # and any word in the private list (company and product names, hostnames). The list lives
-# outside the repo, in LOCALBUILDS_PRIVATE_WORDS (default ~/work/Life/setup/localbuilds/private-words.txt),
+# outside the repo, in LOCALBUILDS_PRIVATE_WORDS (default ~/work/life/setup/localbuilds/private-words.txt),
 # one case-insensitive word or regex per line.
 set -euo pipefail
 
-list=${LOCALBUILDS_PRIVATE_WORDS:-$HOME/work/Life/setup/localbuilds/private-words.txt}
+list=${LOCALBUILDS_PRIVATE_WORDS:-$HOME/work/life/setup/localbuilds/private-words.txt}
 added=$(git diff --cached -U0 --no-color | grep -E '^\+[^+]' || true)
 [ -z "$added" ] && exit 0
 
