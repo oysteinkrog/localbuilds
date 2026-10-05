@@ -1,7 +1,7 @@
 KRDP master with audio and microphone redirection (MR 239) and local fixes, as krdp-local.
 
-It replaces the distro krdp package and links against the private KPipeWire in
-/opt/krdp-local (see the kpipewire recipe). It runs in `--monitor` mode, streaming one
+It replaces the distro krdp package and links against the private KPipeWire and FreeRDP
+in /opt/krdp-local (see the kpipewire and freerdp recipes). It runs in `--monitor` mode, streaming one
 real monitor; no virtual monitor and no RemoteAccess mode.
 
 | Fork branch commit | Why |
@@ -16,6 +16,8 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | SessionController: run a hook with the client size when streaming a real monitor | `KRDP_OUTPUT_RESIZE_HOOK` gets the client's width and height |
 | Run the output resize hook with the client's desktop size at connect | fits the monitor at logon, not only when the client window is resized |
 | AudinStream: reopen the microphone channel when the client doesn't answer | mstsc rejects AUDIO_INPUT when it is opened within about 100 ms of connect, which left the microphone off for the session |
+| VideoStreamSurface: don't warn about cursor-only frames | KWin sends image-less buffers when only the cursor moves; KRDP logged a warning for each |
+| Video: add AVC444 and AVC420 through FreeRDP, codec settings, RemoteFX quality | full color resolution over H.264, NVENC, and sharp text in RemoteFX; needs the freerdp recipe |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
@@ -29,6 +31,21 @@ the fixes on top are local-only.
   override from `edid-add-mode` (dotfiles `bin/`, unit `edid-add-mode@.service`). The
   physical monitor shows "out of range" in that mode while nobody sits at it.
 - The KRDP unit drop-in from `setup/steps/70-services.sh` sets `KRDP_OUTPUT_RESIZE_HOOK`.
+
+## Video codec settings
+
+Set in `~/.config/krdpserverrc`, group `[General]`, read when the server starts:
+
+| Key | Values | Default |
+|---|---|---|
+| `VideoCodec` | `KPipeWire`, `Auto`, `AVC444`, `AVC420`, `RemoteFX` | `KPipeWire` |
+| `VideoEncoder` | `Auto` (NVENC, else libx264), `NVENC`, `libx264` | `Auto` |
+| `EncoderSpeed` | `Default`, `Fast`, `Fastest` | `Fast` |
+| `RemoteFXQuality` | 0 to 100 (100 keeps every detail, 50 is the Windows default) | `100` |
+
+`Auto` and `AVC444` fall back to AVC420 when the client cannot do AVC444, and to RemoteFX
+when it cannot do H.264. The `Quality` key still sets the H.264 quality (as a constant QP).
+`KRDP_DISABLE_H264=1` in the environment still forces RemoteFX.
 
 ## Install
 

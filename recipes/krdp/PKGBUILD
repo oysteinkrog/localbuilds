@@ -1,5 +1,5 @@
 # Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
-# Build steps follow the Arch krdp PKGBUILD. KPipeWire comes from /opt/krdp-local.
+# Build steps follow the Arch krdp PKGBUILD. KPipeWire and FreeRDP come from /opt/krdp-local.
 pkgname=krdp-local
 pkgver=$LB_PKGVER
 pkgrel=$LB_PKGREL
@@ -7,7 +7,7 @@ pkgdesc="KRDP master with audio and microphone redirection (oysteinkrog fork), b
 arch=(x86_64)
 url="https://github.com/oysteinkrog/krdp"
 license=(LGPL-2.0-or-later)
-depends=(freerdp glibc kcmutils kconfig kcoreaddons kcrash kdbusaddons kguiaddons ki18n kirigami-addons
+depends=(freerdp-krdp-local glibc kcmutils kconfig kcoreaddons kcrash kdbusaddons kguiaddons ki18n kirigami-addons
          kpipewire-krdp-local kstatusnotifieritem libpipewire libstdc++ libxkbcommon pam qt6-base
          qtkeychain-qt6 systemd-libs wayland)
 makedepends=(extra-cmake-modules plasma-wayland-protocols)
