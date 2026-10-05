@@ -18,6 +18,7 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | AudinStream: reopen the microphone channel when the client doesn't answer | mstsc rejects AUDIO_INPUT when it is opened within about 100 ms of connect, which left the microphone off for the session |
 | VideoStreamSurface: don't warn about cursor-only frames | KWin sends image-less buffers when only the cursor moves; KRDP logged a warning for each |
 | Video: add AVC444 and AVC420 through FreeRDP, codec settings, RemoteFX quality | full color resolution over H.264, NVENC, and sharp text in RemoteFX; needs the freerdp recipe |
+| VideoStream: start a fresh H.264 encoder for every new surface | a reused encoder only sent changed blocks, so a new (black) surface showed black squares |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
