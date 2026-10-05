@@ -1,0 +1,37 @@
+# Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
+# Server side only: the libraries and server channels krdp-local links against.
+pkgname=freerdp-krdp-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="FreeRDP 3 server libraries in /opt/krdp-local, private to krdp-local, built by localbuild"
+arch=(x86_64)
+url="https://github.com/oysteinkrog/FreeRDP"
+license=(Apache-2.0)
+depends=(ffmpeg glibc icu krb5 libjpeg-turbo libpng libwebp openssl pkcs11-helper systemd-libs
+         zlib)
+makedepends=(cmake ninja)
+options=(!debug)
+
+build() {
+    cmake -B build -S "$LB_SRCDIR" -G Ninja -W no-dev \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/krdp-local \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_INSTALL_RPATH=/opt/krdp-local/lib \
+        -DWITH_BINARY_VERSIONING=ON \
+        -DWITH_CLIENT=OFF -DWITH_CLIENT_CHANNELS=OFF -DWITH_CLIENT_SDL=OFF \
+        -DWITH_SAMPLE=OFF -DWITH_SHADOW=OFF -DWITH_PROXY=OFF -DWITH_PROXY_APP=OFF \
+        -DWITH_SERVER=ON -DWITH_SERVER_CHANNELS=ON -DWITH_CHANNELS=ON \
+        -DWITH_FFMPEG=ON -DWITH_DSP_FFMPEG=ON -DWITH_SWSCALE=ON -DWITH_VAAPI=ON \
+        -DWITH_ICU=ON -DWITH_JPEG=ON -DWITH_SYSTEMD=ON \
+        -DWINPR_UTILS_IMAGE_JPEG=ON -DWINPR_UTILS_IMAGE_PNG=ON -DWINPR_UTILS_IMAGE_WEBP=ON \
+        -DWITH_X11=OFF -DWITH_WAYLAND=OFF -DWITH_ALSA=OFF -DWITH_PULSE=OFF -DWITH_OSS=OFF \
+        -DWITH_CUPS=OFF -DWITH_FUSE=OFF -DWITH_PCSC=OFF -DWITH_SMARTCARD_EMULATE=OFF \
+        -DWITH_WINPR_TOOLS=OFF -DWITH_MANPAGES=OFF -DWITH_AAD=OFF \
+        -DWITH_VERBOSE_WINPR_ASSERT=OFF -DBUILD_TESTING=OFF
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
