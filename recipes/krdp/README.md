@@ -19,7 +19,7 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | VideoStreamSurface: don't warn about cursor-only frames | KWin sends image-less buffers when only the cursor moves; KRDP logged a warning for each |
 | Video: add AVC444 and AVC420 through FreeRDP, codec settings, RemoteFX quality | full color resolution over H.264, NVENC, and sharp text in RemoteFX; needs the freerdp recipe |
 | VideoStream: start a fresh H.264 encoder for every new surface | a reused encoder only sent changed blocks, so a new (black) surface showed black squares |
-| VideoStreamSurface: give each raw PipeWire stream its own copy of the fd | the raw frame path reused a closed fd, so the next session failed and krdpserver aborted |
+| VideoStreamSurface: keep the raw source stream when the mode is set again | recreating it on mstsc's second caps advertisement closed the shared PipeWire fd, so the session failed and krdpserver aborted |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
