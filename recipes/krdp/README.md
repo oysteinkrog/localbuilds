@@ -20,6 +20,7 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | Video: add AVC444 and AVC420 through FreeRDP, codec settings, RemoteFX quality | full color resolution over H.264, NVENC, and sharp text in RemoteFX; needs the freerdp recipe |
 | VideoStream: start a fresh H.264 encoder for every new surface | a reused encoder only sent changed blocks, so a new (black) surface showed black squares |
 | VideoStreamSurface: keep the raw source stream when the mode is set again | recreating it on mstsc's second caps advertisement closed the shared PipeWire fd, so the session failed and krdpserver aborted |
+| VideoStream: send nothing for 500 ms after the first CapsConfirm | mstsc re-advertises its caps 50 to 100 ms into a reconnect and drops the connection if a frame arrives first |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
