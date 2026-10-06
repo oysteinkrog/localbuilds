@@ -9,8 +9,9 @@ url="https://github.com/oysteinkrog/krdp"
 license=(LGPL-2.0-or-later)
 depends=(freerdp-krdp-local glibc kcmutils kconfig kcoreaddons kcrash kdbusaddons kguiaddons ki18n kirigami-addons
          kpipewire-krdp-local kstatusnotifieritem libpipewire libstdc++ libxkbcommon pam qt6-base
-         qtkeychain-qt6 systemd-libs wayland)
-makedepends=(extra-cmake-modules plasma-wayland-protocols)
+         qtkeychain-qt6 systemd-libs wayland ffmpeg libdrm libepoxy mesa)
+# cuda: only the driver API headers, for the GPU encode path; libcuda is loaded at run time.
+makedepends=(extra-cmake-modules plasma-wayland-protocols cuda)
 provides=(krdp)
 conflicts=(krdp)
 options=(!debug)
