@@ -29,6 +29,8 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | Audio: AudioCodec and AudioIdleTimeout settings | the codec and the silence pause were fixed in code |
 | Audio: AAC by default again, AudioBitrate setting, log the latency guard | with mstsc, PCM gave about 300 ms of client latency and dropouts; AAC gives about 135 to 160 ms and plays clean |
 | VideoStreamSurface: read the frame before KWin reuses it, and skip a slow conversion | the queued handler could read a buffer KWin was already drawing into again; the RGBA to RGB32 conversion took Qt's slow generic path |
+| Video: convert AVC444 frames on the GPU; encode them with NVENC straight from GPU memory; GpuEncode setting | branch `oystein/gpu-encode`. A GL compute shader makes both AVC444 pictures and marks changed tiles; NVENC reads them through CUDA-GL interop. Encode time per frame at 2560x1440 went from 26 to 53 ms to 4 to 6 ms, CPU from 50 to 120% to about 15% |
+| GpuAvc444Converter: offline test | `tools/gpuavc444test.cpp` checks the GPU pictures byte for byte against FreeRDP's conversion and decodes the NVENC stream with FreeRDP |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
@@ -53,6 +55,7 @@ Set in `~/.config/krdpserverrc`, group `[General]`, read when the server starts:
 | `VideoEncoder` | `Auto` (NVENC, else libx264), `NVENC`, `libx264` | `Auto` |
 | `EncoderSpeed` | `Default`, `Fast`, `Fastest` | `Fast` |
 | `RemoteFXQuality` | 0 to 100 (100 keeps every detail, 50 is the Windows default) | `100` |
+| `GpuEncode` | AVC444 on the GPU (compute shader and NVENC from CUDA memory) when CUDA is available; ignored with `libx264` | `true` |
 | `AudioCodec` | `Auto` (AAC, else Opus, else PCM), `AAC`, `Opus`, `PCM` | `Auto` |
 | `AudioBitrate` | AAC and Opus bit rate, 32 to 320 kbit/s | `192` |
 | `AudioIdleTimeout` | seconds of silence before the client's audio stream closes; 0 keeps it open | `60` |
