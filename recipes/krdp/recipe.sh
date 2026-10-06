@@ -8,7 +8,7 @@ UPSTREAM=https://invent.kde.org/plasma/krdp.git
 FORK=https://github.com/oysteinkrog/krdp.git
 MODE=fork
 KIND=pkg
-PIN=59c84ee076e9cd4210f464161e4014f360fd90cd
+PIN=dee1519e668c47096fc2ae6a9100173e3e2d5d4f
 
 lb_pkgver() {
     local ver
