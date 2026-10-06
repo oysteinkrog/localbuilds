@@ -1,7 +1,7 @@
 # cass (coding_agent_session_search), built as the pacman package cass-local.
 #
-# Pinned to an upstream commit pushed to my fork as branch main-latest; there are no local
-# changes on it yet. The GPU embedding work is on the fork's gpu-embedding branch and is not
+# Pinned to the fork branch local/ledger-folder-pinned: upstream 4773d03e (branch
+# main-latest) plus a source-ledger fix and a local pin of the ingest contract. See README. The GPU embedding work is on the fork's gpu-embedding branch and is not
 # built. See ~/.dotfiles/docs/cass-setup.md before moving the pin.
 
 UPSTREAM=https://github.com/Dicklesworthstone/coding_agent_session_search.git
@@ -9,7 +9,7 @@ FORK=https://github.com/oysteinkrog/coding_agent_session_search.git
 MODE=fork
 KIND=pkg
 SRC=$HOME/work/cass-gpu
-PIN=4773d03ec30605c1c87522b581050b6748d65a2c
+PIN=d65cc170f3816254f258a886669e17e7a8221f43
 
 lb_pkgver() {
     local ver
