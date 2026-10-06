@@ -20,8 +20,15 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | Video: add AVC444 and AVC420 through FreeRDP, codec settings, RemoteFX quality | full color resolution over H.264, NVENC, and sharp text in RemoteFX; needs the freerdp recipe |
 | VideoStream: start a fresh H.264 encoder for every new surface | a reused encoder only sent changed blocks, so a new (black) surface showed black squares |
 | VideoStreamSurface: keep the raw source stream when the mode is set again | recreating it on mstsc's second caps advertisement closed the shared PipeWire fd, so the session failed and krdpserver aborted |
-| VideoStream: send nothing for 500 ms after the first CapsConfirm | mstsc re-advertises its caps 50 to 100 ms into a reconnect and drops the connection if a frame arrives first |
-| Hold back wrong-size frames while the resize hook fits the monitor | frames at the old monitor size made mstsc drop new sessions with protocol error 0xd06 |
+| VideoStream: send nothing for 500 ms after the first CapsConfirm | added while chasing protocol error 0xd06 on reconnect; the real cause was the encode race fixed below, so this may no longer be needed |
+| Hold back wrong-size frames while the resize hook fits the monitor | added for the same 0xd06 hunt; may also be unneeded now |
+| VideoStream: let KRDP_FIRST_FRAME_DELAY_MS override the first-frame delay | for testing the delay without a rebuild |
+| Video: debug log of the first AVC frames and of ResetGraphics | compares a working and a failing connection; debug level only |
+| Video: don't send a frame to a surface the client reset during encoding | the real cause of 0xd06 on reconnect: mstsc re-advertised its caps while the first NVENC frame (about 400 ms) was encoding, and that frame then went to a surface the client had dropped |
+| Video: log encode time and frame acknowledgement time | debug log every 5 s, to find where video latency goes |
+| Audio: AudioCodec and AudioIdleTimeout settings | the codec and the silence pause were fixed in code |
+| Audio: AAC by default again, AudioBitrate setting, log the latency guard | with mstsc, PCM gave about 300 ms of client latency and dropouts; AAC gives about 135 to 160 ms and plays clean |
+| VideoStreamSurface: read the frame before KWin reuses it, and skip a slow conversion | the queued handler could read a buffer KWin was already drawing into again; the RGBA to RGB32 conversion took Qt's slow generic path |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
@@ -36,7 +43,7 @@ the fixes on top are local-only.
   physical monitor shows "out of range" in that mode while nobody sits at it.
 - The KRDP unit drop-in from `setup/steps/70-services.sh` sets `KRDP_OUTPUT_RESIZE_HOOK`.
 
-## Video codec settings
+## Video and audio settings
 
 Set in `~/.config/krdpserverrc`, group `[General]`, read when the server starts:
 
@@ -46,6 +53,9 @@ Set in `~/.config/krdpserverrc`, group `[General]`, read when the server starts:
 | `VideoEncoder` | `Auto` (NVENC, else libx264), `NVENC`, `libx264` | `Auto` |
 | `EncoderSpeed` | `Default`, `Fast`, `Fastest` | `Fast` |
 | `RemoteFXQuality` | 0 to 100 (100 keeps every detail, 50 is the Windows default) | `100` |
+| `AudioCodec` | `Auto` (AAC, else Opus, else PCM), `AAC`, `Opus`, `PCM` | `Auto` |
+| `AudioBitrate` | AAC and Opus bit rate, 32 to 320 kbit/s | `192` |
+| `AudioIdleTimeout` | seconds of silence before the client's audio stream closes; 0 keeps it open | `60` |
 
 `Auto` and `AVC444` fall back to AVC420 when the client cannot do AVC444, and to RemoteFX
 when it cannot do H.264. The `Quality` key still sets the H.264 quality (as a constant QP).

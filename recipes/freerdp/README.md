@@ -13,6 +13,10 @@ the clients and krfb stays at the distro version. Its libraries carry an rpath t
 | `oystein/krdp-codecs` | upstream tag 3.31.1 | matches the distro FreeRDP |
 | `oystein/krdp-codecs` | codec: let the caller set the RemoteFX quantization values | the fixed default quantization blurs text; KRDP makes it a setting |
 | `oystein/krdp-codecs` | codec/h264: let the caller pick the FFmpeg encoder and its speed | NVENC on NVIDIA, and libx264 presets fast enough for 1440p at 60 fps and AVC444 |
+| `oystein/krdp-codecs` | codec/h264: set the x264 "zerolatency" tune only for x264 | NVENC rejected it and FFmpeg logged a warning on every connect |
+| `oystein/krdp-codecs` | codec/yuv: give each threaded encode work item only its own strip | each strip converted from its top to the bottom of the frame, about 45 times the work; KRDP used about 9 cores |
+| `oystein/krdp-codecs` | codec/h264: compare the 64x64 tiles on the thread pool | change detection took 5 to 9 ms per frame on one thread, now about 2 ms |
+| `oystein/krdp-codecs` | codec/h264: fix two bugs in the change detection for U, V and AVC444v2 chroma | colour-only changes could be missed, and AVC444v2 chroma rects pointed at the wrong screen areas |
 
 ## Keeping it in step with the distro
 
