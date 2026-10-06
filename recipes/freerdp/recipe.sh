@@ -8,7 +8,7 @@ UPSTREAM=https://github.com/FreeRDP/FreeRDP.git
 FORK=https://github.com/oysteinkrog/FreeRDP.git
 MODE=fork
 KIND=pkg
-PIN=fb9e4833077ee7d1a4a131cb67e46b46c83b9d17
+PIN=eb79a306fc2a08a81a5b0839013bb7dcbbf4833c
 
 lb_pkgver() {
     echo "$(git -C "$LB_WORK/src" describe --tags --abbrev=0 | sed 's/^v//').g${LB_COMMIT:0:10}"
