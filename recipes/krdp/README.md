@@ -31,6 +31,10 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | VideoStreamSurface: read the frame before KWin reuses it, and skip a slow conversion | the queued handler could read a buffer KWin was already drawing into again; the RGBA to RGB32 conversion took Qt's slow generic path |
 | Video: convert AVC444 frames on the GPU; encode them with NVENC straight from GPU memory; GpuEncode setting | branch `oystein/gpu-encode`. A GL compute shader makes both AVC444 pictures and marks changed tiles; NVENC reads them through CUDA-GL interop. Encode time per frame at 2560x1440 went from 26 to 53 ms to 4 to 6 ms, CPU from 50 to 120% to about 15% |
 | GpuAvc444Converter: offline test | `tools/gpuavc444test.cpp` checks the GPU pictures byte for byte against FreeRDP's conversion and decodes the NVENC stream with FreeRDP |
+| Video: log frame sizes and acknowledgement time by frame size | debug log every 5 s; `KRDP_FRAME_TRACE=1` logs every frame. It showed that mstsc's software H.264 decode, not the network, made large frames slow to acknowledge |
+| Video: force an IDR picture on reset instead of reopening NVENC, and open it early | mstsc resets its graphics channel on every connect; reopening NVENC cost 90 to 120 ms each time |
+| Video: KRDP_MAX_IN_FLIGHT fixes the frame window | for experiments; the window normally comes from the round-trip time |
+| Video: confirm the newest GFX caps version we know, not the newest offered | msrdc offers RDPGFX 11.1 to 11.5, which FreeRDP does not know; confirming one turned AVC444 off |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
@@ -63,6 +67,21 @@ Set in `~/.config/krdpserverrc`, group `[General]`, read when the server starts:
 `Auto` and `AVC444` fall back to AVC420 when the client cannot do AVC444, and to RemoteFX
 when it cannot do H.264. The `Quality` key still sets the H.264 quality (as a constant QP).
 `KRDP_DISABLE_H264=1` in the environment still forces RemoteFX.
+
+## Which Windows client
+
+Use msrdc (the Remote Desktop app, or the Windows App), not mstsc. Measured on 2026-10-06 at
+2560x1440 over Tailscale (16.6 ms RTT), AVC444 with GPU encode:
+
+| | mstsc | msrdc |
+|---|---|---|
+| H.264 decode on the client | software | GPU |
+| Acknowledgement, frames below 64 kB | 27 to 39 ms | 18 to 21 ms |
+| Acknowledgement, frames of 256 kB and more | 81 to 134 ms | 21 to 24 ms |
+| Audio latency the client reports | about 110 ms | about 110 ms |
+
+msrdc has no connect dialog: save the connection from mstsc as an `.rdp` file and open that
+file with `msrdc.exe`.
 
 ## Install
 
