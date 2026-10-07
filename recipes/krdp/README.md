@@ -37,6 +37,7 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | Video: confirm the newest GFX caps version we know, not the newest offered | msrdc offers RDPGFX 11.1 to 11.5, which FreeRDP does not know; confirming one turned AVC444 off |
 | Video: send a full-screen key frame every 10 s on the GPU path; handle suspended frame acknowledgements | after a few hours with msrdc the picture became smeared blocks until a reconnect: KRDP sent one key frame per connection, so a client decoder that got out of step never recovered |
 | Video: capture the GPU AVC444 stream on request; never mix encoders | `touch $XDG_RUNTIME_DIR/krdp-dump-now` writes the next 10 s to `/var/tmp/krdp-dump/`, and `tools/avc444dumpdecode` decodes it like a client, to tell a client bug from a KRDP bug. A frame without a DMA-BUF went to FreeRDP's CPU encoder, a second encoder feeding the client's one decoder |
+| Video: open a new encoder after a client graphics reset; refresh key frames off | msrdc answered forced IDR pictures with graphics resets, about 6 in a second, then a protocol error disconnect. It always takes the first picture of a new encoder |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
@@ -62,7 +63,7 @@ Set in `~/.config/krdpserverrc`, group `[General]`, read when the server starts:
 | `EncoderSpeed` | `Default`, `Fast`, `Fastest` | `Fast` |
 | `RemoteFXQuality` | 0 to 100 (100 keeps every detail, 50 is the Windows default) | `100` |
 | `GpuEncode` | AVC444 on the GPU (compute shader and NVENC from CUDA memory) when CUDA is available; ignored with `libx264` | `true` |
-| `KeyFrameInterval` | seconds between full-screen key frames on the GPU path, so a broken picture recovers; 0 turns them off | `10` |
+| `KeyFrameInterval` | seconds between full-screen key frames (forced IDR) on the GPU path; 0 turns them off. msrdc dropped the connection within minutes of getting them | `0` |
 | `AudioCodec` | `Auto` (AAC, else Opus, else PCM), `AAC`, `Opus`, `PCM` | `Auto` |
 | `AudioBitrate` | AAC and Opus bit rate, 32 to 320 kbit/s | `192` |
 | `AudioIdleTimeout` | seconds of silence before the client's audio stream closes; 0 keeps it open | `60` |
