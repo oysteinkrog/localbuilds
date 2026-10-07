@@ -26,4 +26,12 @@ package() {
     install -Dm755 "$t/frankenterm-gui" "$pkgdir/usr/bin/frankenterm-gui"
     install -Dm755 "$t/frankenterm-mux-server" "$pkgdir/usr/bin/frankenterm-mux-server"
     install -Dm644 "$LB_SRCDIR/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    # The icon is named after the app ID, which is also the window class, the desktop
+    # file name and the icon the notifications ask for. Fork commits before fa830779
+    # have no SVG.
+    local icon="$LB_SRCDIR/assets/icon/terminal.svg"
+    if [ -f "$icon" ]; then
+        install -Dm644 "$icon" \
+            "$pkgdir/usr/share/icons/hicolor/scalable/apps/com.dicklesworthstone.frankenterm.svg"
+    fi
 }
