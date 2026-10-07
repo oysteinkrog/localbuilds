@@ -35,6 +35,7 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | Video: force an IDR picture on reset instead of reopening NVENC, and open it early | mstsc resets its graphics channel on every connect; reopening NVENC cost 90 to 120 ms each time |
 | Video: KRDP_MAX_IN_FLIGHT fixes the frame window | for experiments; the window normally comes from the round-trip time |
 | Video: confirm the newest GFX caps version we know, not the newest offered | msrdc offers RDPGFX 11.1 to 11.5, which FreeRDP does not know; confirming one turned AVC444 off |
+| Video: send a full-screen key frame every 10 s on the GPU path; handle suspended frame acknowledgements | after a few hours with msrdc the picture became smeared blocks until a reconnect: KRDP sent one key frame per connection, so a client decoder that got out of step never recovered |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
@@ -60,6 +61,7 @@ Set in `~/.config/krdpserverrc`, group `[General]`, read when the server starts:
 | `EncoderSpeed` | `Default`, `Fast`, `Fastest` | `Fast` |
 | `RemoteFXQuality` | 0 to 100 (100 keeps every detail, 50 is the Windows default) | `100` |
 | `GpuEncode` | AVC444 on the GPU (compute shader and NVENC from CUDA memory) when CUDA is available; ignored with `libx264` | `true` |
+| `KeyFrameInterval` | seconds between full-screen key frames on the GPU path, so a broken picture recovers; 0 turns them off | `10` |
 | `AudioCodec` | `Auto` (AAC, else Opus, else PCM), `AAC`, `Opus`, `PCM` | `Auto` |
 | `AudioBitrate` | AAC and Opus bit rate, 32 to 320 kbit/s | `192` |
 | `AudioIdleTimeout` | seconds of silence before the client's audio stream closes; 0 keeps it open | `60` |
