@@ -2,7 +2,7 @@
 # It replaces the distro krdp package and links against the private KPipeWire 6.8
 # from the kpipewire recipe (/opt/krdp-local).
 #
-# Changes live on the fork branch oystein/audio-and-resize (master plus MR 239).
+# Changes live on the fork branch oystein/main (master plus MR 239 and the local fixes).
 
 UPSTREAM=https://invent.kde.org/plasma/krdp.git
 FORK=https://github.com/oysteinkrog/krdp.git
