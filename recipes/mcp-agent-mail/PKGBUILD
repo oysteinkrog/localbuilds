@@ -15,6 +15,10 @@ build() {
     cd "$LB_SRCDIR"
     # Same packages and default features as upstream's install-local.sh. rust-toolchain.toml
     # picks the pinned nightly. Intermediate files stay in the worktree's own target/.
+    # The release profile (thin LTO, one codegen unit) needs about 6 GB per big crate. With
+    # cargo's default of 32 jobs the first build filled its 16 GiB heavy-build scope and
+    # crawled in memory reclaim for over an hour (2026-10-08). Four jobs fit.
+    export CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS:-4}
     nice -n 5 cargo build --release --locked -p mcp-agent-mail -p mcp-agent-mail-cli
 }
 
