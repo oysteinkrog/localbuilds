@@ -21,6 +21,10 @@ build() {
     # 8 and 3 jobs (heavy-build sets CARGO_BUILD_JOBS=8) stalled for 30 to 60 minutes.
     # One job keeps the peak at about 9 GB. Set unconditionally, on purpose.
     export CARGO_BUILD_JOBS=1
+    # makepkg exports the system CFLAGS (-O3, _FORTIFY_SOURCE). cc-rs appends them after a
+    # crate's own flags, so aws-lc-sys compiles jitterentropy with -O3, and jitterentropy
+    # stops with #error because it must be built with -O0. Let each crate pick its own.
+    unset CFLAGS CXXFLAGS
     nice -n 5 cargo build --release --locked -p mcp-agent-mail -p mcp-agent-mail-cli
 }
 
