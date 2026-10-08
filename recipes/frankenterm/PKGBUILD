@@ -9,7 +9,8 @@ license=(MIT)
 depends=(fontconfig libxkbcommon wayland)
 makedepends=(rustup)
 provides=(frankenterm)
-options=(!lto !debug)
+# !strip keeps the line tables of the release-local profile, so perf can name functions.
+options=(!lto !debug !strip)
 
 build() {
     cd "$LB_SRCDIR"
@@ -18,11 +19,12 @@ build() {
     # ~/.cargo/config.toml puts build.build-dir in the workspace. Each build here runs
     # in a new worktree, so keep the intermediate files in the recipe target dir too.
     export CARGO_BUILD_BUILD_DIR="$CARGO_TARGET_DIR"
-    cargo build --release --locked -p frankenterm-gui -p frankenterm-mux-server
+    # release-local: release-interactive (opt-level 3) plus line tables, defined on the fork.
+    cargo build --profile release-local --locked -p frankenterm-gui -p frankenterm-mux-server
 }
 
 package() {
-    local t="$HOME/.cache/build/frankenterm/target/release"
+    local t="$HOME/.cache/build/frankenterm/target/release-local"
     install -Dm755 "$t/frankenterm-gui" "$pkgdir/usr/bin/frankenterm-gui"
     install -Dm755 "$t/frankenterm-mux-server" "$pkgdir/usr/bin/frankenterm-mux-server"
     install -Dm644 "$LB_SRCDIR/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
