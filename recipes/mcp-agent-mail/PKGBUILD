@@ -1,0 +1,25 @@
+# Built by localbuild from the worktree in $LB_SRCDIR; not for use with plain makepkg.
+pkgname=mcp-agent-mail-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="MCP Agent Mail server (mcp-agent-mail) and CLI (am), built by localbuild"
+arch=(x86_64)
+url="https://github.com/Dicklesworthstone/mcp_agent_mail_rust"
+license=(custom)
+makedepends=(rustup)
+depends=(git)
+provides=(am mcp-agent-mail)
+options=(!lto !debug !strip)
+
+build() {
+    cd "$LB_SRCDIR"
+    # Same packages and default features as upstream's install-local.sh. rust-toolchain.toml
+    # picks the pinned nightly. Intermediate files stay in the worktree's own target/.
+    nice -n 5 cargo build --release --locked -p mcp-agent-mail -p mcp-agent-mail-cli
+}
+
+package() {
+    install -Dm755 "$LB_SRCDIR/target/release/am" "$pkgdir/usr/bin/am"
+    install -Dm755 "$LB_SRCDIR/target/release/mcp-agent-mail" "$pkgdir/usr/bin/mcp-agent-mail"
+    install -Dm644 "$LB_SRCDIR/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
