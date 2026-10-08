@@ -15,11 +15,12 @@ build() {
     cd "$LB_SRCDIR"
     # Same packages and default features as upstream's install-local.sh. rust-toolchain.toml
     # picks the pinned nightly. Intermediate files stay in the worktree's own target/.
-    # The release profile (thin LTO, one codegen unit) needs about 6 GB for each of the two
-    # asupersync builds. With 8 jobs (heavy-build sets CARGO_BUILD_JOBS=8) the build filled
-    # its 16 GiB heavy-build scope and crawled in memory reclaim for over an hour
-    # (2026-10-08). Three jobs peak at about 15 GB. Set unconditionally, on purpose.
-    export CARGO_BUILD_JOBS=3
+    # The release profile (thin LTO, one codegen unit) builds asupersync twice, and each
+    # build peaks at about 8.5 GB. Any job count above 1 runs both at once, which fills the
+    # 16 GiB heavy-build scope and spends most CPU in memory reclaim: on 2026-10-08 runs with
+    # 8 and 3 jobs (heavy-build sets CARGO_BUILD_JOBS=8) stalled for 30 to 60 minutes.
+    # One job keeps the peak at about 9 GB. Set unconditionally, on purpose.
+    export CARGO_BUILD_JOBS=1
     nice -n 5 cargo build --release --locked -p mcp-agent-mail -p mcp-agent-mail-cli
 }
 
