@@ -20,7 +20,9 @@ build() {
     # in a new worktree, so keep the intermediate files in the recipe target dir too.
     export CARGO_BUILD_BUILD_DIR="$CARGO_TARGET_DIR"
     # release-local: release-interactive (opt-level 3) plus line tables, defined on the fork.
-    cargo build --profile release-local --locked -p frankenterm-gui -p frankenterm-mux-server
+    # wayland: the GUI talks to the compositor directly instead of through XWayland.
+    cargo build --profile release-local --locked -p frankenterm-gui -p frankenterm-mux-server \
+        --features frankenterm-gui/wayland
 }
 
 package() {
