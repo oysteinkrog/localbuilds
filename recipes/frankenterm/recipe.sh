@@ -8,7 +8,7 @@ UPSTREAM=https://github.com/Dicklesworthstone/frankenterm.git
 FORK=https://github.com/oysteinkrog/frankenterm.git
 MODE=fork
 KIND=pkg
-PIN=af5142ad029569b89f1e0fbf470e98f6ff9465ca
+PIN=32b61068cfa242d0f7f69c400695635ba990f315
 
 lb_pkgver() {
     local ver
