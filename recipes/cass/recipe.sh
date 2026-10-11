@@ -9,7 +9,7 @@ FORK=https://github.com/oysteinkrog/coding_agent_session_search.git
 MODE=fork
 KIND=pkg
 SRC=$HOME/work/cass-gpu
-PIN=d65cc170f3816254f258a886669e17e7a8221f43
+PIN=2031aaa770f7d4948e8987bbdc0aed2e89062138
 
 lb_pkgver() {
     local ver

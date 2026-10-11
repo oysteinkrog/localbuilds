@@ -10,7 +10,7 @@ and `~/.local/bin/cass-gpu` are symlinks to it for scripts that use the old path
 | Branch | What it is |
 |---|---|
 | `main-latest` | upstream 4773d03e, the base of the build, no local changes |
-| `local/ledger-folder-pinned` | what is built: `main-latest` plus the two commits below |
+| `local/ledger-folder-pinned` | what is built: `main-latest` plus the three commits below |
 | `ledger-parent-dir-no-sidecars` | the ledger fix alone on `main-latest`, without the pin |
 | `pr/ledger-folder-dependency` | the ledger fix on upstream master, for an upstream report |
 | `gpu-embedding` | old fastembed/ONNX DirectML and CUDA work, based on a May commit; superseded |
@@ -28,6 +28,12 @@ and `~/.local/bin/cass-gpu` are symlinks to it for scripts that use the old path
    ledger instead of re-parsing the whole corpus. Parsers are unchanged, so that is safe
    here. Drop this commit when the base moves to a newer upstream commit or any parser
    changes. Local only.
+3. **Ledger ignores the device number.** The ledger compared each source's device
+   number, and btrfs gives a subvolume mount a new one at some boots, so after a
+   reboot every unchanged source looked changed and was parsed again. The device is
+   no longer recorded, and a saved entry's device is ignored when matching. Size,
+   mtime, inode and ctime still catch a real change. Upstream-Status: not yet
+   reported; report it with the folder-dependency report.
 
 Check after a build: `strings <binary> | grep -o 'c01f9a85[0-9a-f]*'` prints the full
 contract.
