@@ -38,6 +38,7 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | Video: send a full-screen key frame every 10 s on the GPU path; handle suspended frame acknowledgements | after a few hours with msrdc the picture became smeared blocks until a reconnect: KRDP sent one key frame per connection, so a client decoder that got out of step never recovered |
 | Video: capture the GPU AVC444 stream on request; never mix encoders | `touch $XDG_RUNTIME_DIR/krdp-dump-now` writes the next 10 s to `/var/tmp/krdp-dump/`, and `tools/avc444dumpdecode` decodes it like a client, to tell a client bug from a KRDP bug. A frame without a DMA-BUF went to FreeRDP's CPU encoder, a second encoder feeding the client's one decoder |
 | Video: open a new encoder after a client graphics reset; refresh key frames off | msrdc answered forced IDR pictures with graphics resets, about 6 in a second, then a protocol error disconnect. It always takes the first picture of a new encoder |
+| Video: keep the GPU AVC444 frames since the last key frame and save them on a client reset | msrdc rejects some frames (`WireDecoderError_DecodeW2S1AvcDecodeFail`), resets, and drops the connection after a few. On each reset or close, KRDP writes the kept frames (up to 48 MB) and an `index.txt` to `/var/tmp/krdp-dump/auto-<time>/`, keeping the newest 40. Each sent picture is checked (rects, qp, start code, one picture per bitstream); a break is logged and marked with `!` |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
