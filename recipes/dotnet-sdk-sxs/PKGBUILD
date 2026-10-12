@@ -1,0 +1,20 @@
+# Built by localbuild (binary mode): LB_PKGVER is the SDK version, LB_SHA512 its checksum.
+# Ships only sdk/<version>; the host, runtime, targeting pack, workload manifests and
+# templates come from the extra/dotnet-* packages.
+pkgname=dotnet-sdk-${LB_PKGVER##*.}-sxs
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc=".NET SDK $LB_PKGVER (Microsoft binary), installed beside the distro SDK"
+arch=(x86_64)
+url='https://dotnet.microsoft.com'
+license=(MIT)
+depends=('dotnet-host>=10.0.12' 'dotnet-runtime-10.0' 'dotnet-targeting-pack-10.0')
+options=(!strip !debug)
+source=("https://builds.dotnet.microsoft.com/dotnet/Sdk/${pkgver}/dotnet-sdk-${pkgver}-linux-x64.tar.gz")
+sha512sums=("$LB_SHA512")
+noextract=("dotnet-sdk-${pkgver}-linux-x64.tar.gz")
+
+package() {
+    install -d "$pkgdir/usr/share/dotnet"
+    bsdtar -xf "$srcdir/dotnet-sdk-$pkgver-linux-x64.tar.gz" -C "$pkgdir/usr/share/dotnet" "./sdk/$pkgver"
+}

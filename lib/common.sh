@@ -4,13 +4,16 @@
 #   UPSTREAM  git URL of the upstream project
 #   MODE      patches  apply the files listed in `series` on top of PIN
 #             fork     build PIN as it is; PIN must be a commit pushed to FORK
+#             binary   package a prebuilt upstream release; PIN is its version, KIND must be pkg
 #   KIND      tree     install a directory under lb_install_root, switched with a `current` link
 #             pkg      build a pacman package from the recipe's PKGBUILD and install it with pacman
 #   PIN       upstream tag or commit (patches), or fork commit (fork)
 #   FORK      git URL of the fork (fork mode only)
 #   VARIANTS  optional, space separated; variant v uses series.v instead of series
+#   SHA512    checksum of the release file (binary mode only); the PKGBUILD gets it as $LB_SHA512
 # and may define the functions lb_build (required for tree), lb_install_root (tree),
-# lb_pkgver (pkg) and lb_check.
+# lb_pkgver (pkg), lb_check and lb_pin_hash (binary: print the SHA512 for the version in $1,
+# so `localbuild bump` can update SHA512 too).
 
 LB_CACHE=${LB_CACHE:-$HOME/.cache/build}
 LB_STATE=${LB_STATE:-$HOME/.local/state/localbuild}
@@ -29,13 +32,17 @@ lb_load() {
     LB_RECIPE_DIR=$LB_ROOT/recipes/$LB_NAME
     [ -f "$LB_RECIPE_DIR/recipe.sh" ] || die "no recipe: recipes/$LB_NAME/recipe.sh"
 
-    UPSTREAM="" MODE="" KIND="" PIN="" FORK="" VARIANTS=""
-    unset -f lb_build lb_install_root lb_pkgver lb_check 2>/dev/null || true
+    UPSTREAM="" MODE="" KIND="" PIN="" FORK="" VARIANTS="" SHA512=""
+    unset -f lb_build lb_install_root lb_pkgver lb_check lb_pin_hash 2>/dev/null || true
     SRC=$HOME/src/$LB_NAME
     . "$LB_RECIPE_DIR/recipe.sh"
     [ -n "$UPSTREAM" ] && [ -n "$PIN" ] || die "$LB_NAME: recipe must set UPSTREAM and PIN"
-    case "$MODE" in patches|fork) ;; *) die "$LB_NAME: MODE must be patches or fork" ;; esac
+    case "$MODE" in patches|fork|binary) ;; *) die "$LB_NAME: MODE must be patches, fork or binary" ;; esac
     case "$KIND" in tree|pkg) ;; *) die "$LB_NAME: KIND must be tree or pkg" ;; esac
+    if [ "$MODE" = binary ]; then
+        [ "$KIND" = pkg ] || die "$LB_NAME: binary recipes must use KIND=pkg"
+        [[ $SHA512 =~ ^[0-9a-f]{128}$ ]] || die "$LB_NAME: binary recipe must set SHA512"
+    fi
 
     if [ -n "$VARIANTS" ] && [ -z "$LB_VARIANT" ]; then
         die "$LB_NAME has variants ($VARIANTS); use $LB_NAME@<variant>"
@@ -90,6 +97,8 @@ lb_identity() {
 
 # Clone upstream into ~/src/<name> if needed and make sure PIN is present.
 lb_source() {
+    # Binary recipes have no clone: makepkg downloads the release and checks SHA512.
+    if [ "$MODE" = binary ]; then LB_COMMIT=$PIN; return 0; fi
     if [ ! -d "$SRC/.git" ]; then
         say "cloning $UPSTREAM into $SRC"
         git clone --filter=blob:none --no-checkout "$UPSTREAM" "$SRC"  # noqa: grove-worktree
@@ -121,6 +130,7 @@ lb_fresh_worktree() {
     fi
     rm -rf "$LB_WORK"
     mkdir -p "$LB_WORK"
+    [ "$MODE" = binary ] && return 0
     git -C "$SRC" worktree add -q --detach "$LB_WORK/src" "$LB_COMMIT"  # noqa: grove-worktree
     local p
     for p in "${LB_PATCHES[@]}"; do
@@ -132,6 +142,7 @@ lb_fresh_worktree() {
 
 lb_worktree_dirty() {
     local dir=$1
+    [ "$MODE" = binary ] && return 1
     [ -n "$(git -C "$dir/src" status --porcelain --untracked-files=normal 2>/dev/null)" ] && return 0
     [ "$(git -C "$dir/src" rev-parse HEAD)" != "$(cat "$dir/series-head")" ]
 }
@@ -195,6 +206,14 @@ lb_build_pkg() {
     local pkgdir=$LB_WORK/makepkg
     rm -rf "$pkgdir"; mkdir -p "$pkgdir"
     cp "$LB_RECIPE_DIR/PKGBUILD" "$pkgdir/"
+    if [ "$MODE" = binary ]; then
+        # Downloads are kept per recipe, so rebuilding the same release does not fetch it again.
+        local srcdest=$LB_CACHE/$LB_NAME/sources
+        mkdir -p "$srcdest"
+        (cd "$pkgdir" && SRCDEST=$srcdest LB_PKGVER=$PIN LB_PKGREL=1 LB_SHA512=$SHA512 \
+            PKGDEST=$LB_WORK/out makepkg -f --noconfirm --nodeps)
+        return
+    fi
     local ver
     ver=$(declare -F lb_pkgver >/dev/null && lb_pkgver || echo "r$(git -C "$LB_WORK/src" rev-list --count HEAD).${LB_COMMIT:0:10}")
     (cd "$pkgdir" && LB_SRCDIR=$LB_WORK/src LB_PKGVER=$ver LB_PKGREL=1 PKGDEST=$LB_WORK/out \
@@ -301,6 +320,12 @@ lb_cmd_bump() {
     local f=$LB_ROOT/recipes/$1/recipe.sh
     [ -f "$f" ] || die "no recipe $1"
     sed -i "s|^PIN=.*|PIN=$2|" "$f"
+    if grep -q '^MODE=binary' "$f"; then
+        local hash
+        hash=$(. "$f"; declare -F lb_pin_hash >/dev/null && lb_pin_hash "$2" || true)
+        [[ $hash =~ ^[0-9a-f]{128}$ ]] || die "recipes/$1: no SHA512 for $2; set it by hand"
+        sed -i "s|^SHA512=.*|SHA512=$hash|" "$f"
+    fi
     say "recipes/$1: PIN=$2. Build, test, then commit the recipe."
 }
 
@@ -320,7 +345,7 @@ _lb_status_one() {
       [ -f "$state" ] && installed=$(head -1 "$state")
       [ "$installed" = "-" ] && note+=("not installed by localbuild")
       [ "$installed" != "-" ] && [ "$installed" != "$LB_ID" ] && note+=("recipe changed since install (want $LB_ID)")
-      [ -d "$SRC/.git" ] || note+=("no source clone")
+      [ "$MODE" = binary ] || [ -d "$SRC/.git" ] || note+=("no source clone")
       if [ -L "$LB_LATEST" ] && [ -f "$(readlink -f "$LB_LATEST")/DIRTY" ]; then
           note+=("unsaved edits in $(readlink -f "$LB_LATEST")/src")
       fi

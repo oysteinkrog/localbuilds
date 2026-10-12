@@ -37,6 +37,10 @@ A recipe has one **mode**:
   be installed.
 - `patches`: apply the patch files in `series` on top of an upstream tag or commit. Use it only
   when there is no git repository to fork.
+- `binary`: package a prebuilt upstream release, such as a vendor tarball, with `KIND=pkg`.
+  `PIN` is the release version and `SHA512` the checksum of the file; makepkg downloads it and
+  checks it. There is no clone and there are no patches. When the recipe defines
+  `lb_pin_hash`, `localbuild bump <name> <version>` also fills in the new checksum.
 
 and one **kind**:
 
