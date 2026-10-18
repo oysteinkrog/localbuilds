@@ -6,8 +6,13 @@ The build steps and dependencies are copied from the Arch kwin 6.7.5 PKGBUILD.
 | Fork branch | Commit | Why |
 |---|---|---|
 | `oystein/resizable-virtual-monitors` | cherry-pick of KWin MR 7932 onto v6.7.5 | lets KRDP resize its virtual monitor to the RDP client window |
+| `oystein/maximized-output-change` | 3 commits on top of the branch above | maximized windows keep the right size when monitors are turned on or off or change mode (remote mode switches) |
 
 Upstream-Status: merged 6.8 (https://invent.kde.org/plasma/kwin/-/merge_requests/7932)
+
+Upstream-Status for `oystein/maximized-output-change`: local-only, not sent upstream.
+KWin master (checked 2026-10-18) still has both bugs it fixes. Before dropping this
+recipe for Plasma 6.8, check whether 6.8 has them too.
 
 ## Go back to the distro kwin
 

@@ -8,7 +8,7 @@ UPSTREAM=https://invent.kde.org/plasma/kwin.git
 FORK=https://github.com/oysteinkrog/kwin.git
 MODE=fork
 KIND=pkg
-PIN=250efe954de41b22ed36adfb5de5f3c1ce729532
+PIN=0d44f7548d8db42110b3aed81c2e77837c887a1f
 
 lb_pkgver() {
     local base
