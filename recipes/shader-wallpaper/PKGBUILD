@@ -1,0 +1,24 @@
+# Built by localbuild from the worktree in $LB_SRCDIR; not for use with plain makepkg.
+pkgname=plasma-wallpaper-shader-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="Shader Wallpaper v4 for Plasma 6 (online.knowmad.shaderwallpaper), built by localbuild"
+arch=(x86_64)
+url="https://github.com/y4my4my4m/kde-shader-wallpaper"
+license=(GPL-3.0-or-later)
+depends=(glibc kconfig ki18n kpackage libgcc libpipewire libplasma libstdc++ libxcb
+         qt6-base qt6-declarative qt6-multimedia shaderc wayland)
+makedepends=(cmake extra-cmake-modules ninja wayland-protocols)
+options=(!debug)
+
+build() {
+    cmake -B build -S "$LB_SRCDIR" -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DBUILD_TESTING=OFF
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
