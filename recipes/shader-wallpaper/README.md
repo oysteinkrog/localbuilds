@@ -10,3 +10,4 @@ precedence, so remove the KDE Store install. Restart plasmashell after installin
 | Patch | Why |
 |---|---|
 | `0001-singleton-cpp-ownership.patch` | the shared shader library object was deleted when one QML engine went away, so later wallpapers fell back to the default shader (seen as `toRelativeShaderPath is not a function`) |
+| `0002-tweaks-vec3-as-string.patch` | the Shader Tweaks panel lost vec3 and colour values in its ListModel and wrote `vec3(0.0, 0.0, 0.0)`, which turned colour-graded shaders black |

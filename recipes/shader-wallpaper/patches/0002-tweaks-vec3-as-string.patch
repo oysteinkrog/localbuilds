@@ -1,0 +1,86 @@
+From 3739e469b9be002b4a9f84de949cce4c2b7f3e04 Mon Sep 17 00:00:00 2001
+From: localbuild <localbuild@localhost>
+Date: Tue, 20 Oct 2026 19:17:01 +0200
+Subject: [PATCH] tweaks: keep vec3 values as strings in the ListModel
+
+A JS array stored in a ListModel role becomes a nested ListModel and its
+numbers are lost. _asVec3Array then fails, every vec3 and colour reads as
+dirty with value 0, and the panel rewrites the shader with
+vec3(0.0, 0.0, 0.0) and persists that garbage. With a colour-grading
+shader the wallpaper goes black as soon as the config dialog opens. Store
+vec3 values as "x,y,z" strings and normalise them on every read.
+
+Upstream-Status: local-only
+---
+ package/contents/ui/ShaderTweaksPanel.qml | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/package/contents/ui/ShaderTweaksPanel.qml b/package/contents/ui/ShaderTweaksPanel.qml
+index 212b961..d257096 100644
+--- a/package/contents/ui/ShaderTweaksPanel.qml
++++ b/package/contents/ui/ShaderTweaksPanel.qml
+@@ -125,7 +125,7 @@ ColumnLayout {
+                 // Defend against stale/malformed persisted values from older
+                 // panel versions so we never clobber shader defaults with
+                 // bad data (e.g. vec3 color becoming numeric 0 -> black).
+-                t.value = _coerceStoredValue(t.kind, stored, t.defaults)
++                t.value = _clone(_coerceStoredValue(t.kind, stored, t.defaults))
+             }
+             tweakables.append(t)
+         }
+@@ -304,9 +304,12 @@ ColumnLayout {
+         return e
+     }
+ 
++    // vec3 values are kept in the ListModel as "x,y,z" strings. A JS array
++    // put into a ListModel role becomes a nested ListModel whose numbers are
++    // lost, which turned every colour into vec3(0.0, 0.0, 0.0).
+     function _clone(v) {
+         const maybeVec = _asVec3Array(v)
+-        if (maybeVec) return maybeVec
++        if (maybeVec) return maybeVec.join(",")
+         return v
+     }
+ 
+@@ -318,6 +321,11 @@ ColumnLayout {
+         }
+         // ListModel dynamic roles can surface arrays as model-like objects
+         // (e.g. QQmlListModel), so normalize before arithmetic/mutation.
++        if (typeof v === "string") {
++            const parts = v.split(",")
++            if (parts.length !== 3) return null
++            return pack3(parts[0], parts[1], parts[2])
++        }
+         if (Array.isArray(v)) {
+             if (v.length !== 3) return null
+             return pack3(v[0], v[1], v[2])
+@@ -400,7 +408,7 @@ ColumnLayout {
+         case "vec3":
+             return line.replace(
+                 /^(\s*(?:uniform\s+|const\s+)?vec3\s+\w+\s*=\s*vec3\s*\(\s*)([+-]?\d*\.?\d+)(\s*,\s*)([+-]?\d*\.?\d+)(\s*,\s*)([+-]?\d*\.?\d+)(\s*\)\s*;)/,
+-                "$1" + _formatFloat(t.value[0]) + "$3" + _formatFloat(t.value[1]) + "$5" + _formatFloat(t.value[2]) + "$7")
++                "$1" + _formatFloat(_asVec3Array(t.value)[0]) + "$3" + _formatFloat(_asVec3Array(t.value)[1]) + "$5" + _formatFloat(_asVec3Array(t.value)[2]) + "$7")
+         case "define-float":
+             return line.replace(
+                 /^(\s*#define\s+\w+\s+)([+-]?\d+\.\d*|\.\d+|[+-]?\d+\.\d+)(\s*)$/,
+@@ -490,7 +498,7 @@ ColumnLayout {
+         for (let i = 0; i < tweakables.count; i++) {
+             const t = tweakables.get(i)
+             if (_valueEquals(t.value, t.defaults)) continue
+-            bucket[t.name] = _clone(t.value)
++            bucket[t.name] = _asVec3Array(t.value) || t.value
+             anyDirty = true
+         }
+         if (anyDirty) {
+@@ -716,7 +724,7 @@ ColumnLayout {
+                             to:    1000000
+                             // step in 1000ths to give us 3 decimals via valueFromText
+                             stepSize: 10
+-                            value: Math.round((row.modelRow ? row.modelRow.value[index] : 0) * 1000)
++                            value: Math.round((row.modelRow ? (root._asVec3Array(row.modelRow.value) || [0, 0, 0])[index] : 0) * 1000)
+                             textFromValue: function(v) { return (v / 1000).toFixed(3) }
+                             valueFromText: function(t) { return Math.round(parseFloat(t) * 1000) }
+                             onValueModified: {
+-- 
+2.56.0
+
