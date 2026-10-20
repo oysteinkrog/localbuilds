@@ -7,4 +7,6 @@ choice are never saved (upstream issues #78 and #79, fixed in v4).
 The package installs under `/usr`. A copy in `~/.local/share/plasma/wallpapers/` takes
 precedence, so remove the KDE Store install. Restart plasmashell after installing.
 
-No local patches.
+| Patch | Why |
+|---|---|
+| `0001-singleton-cpp-ownership.patch` | the shared shader library object was deleted when one QML engine went away, so later wallpapers fell back to the default shader (seen as `toRelativeShaderPath is not a function`) |
