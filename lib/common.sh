@@ -301,7 +301,7 @@ lb_cmd_patch_save() {
     [ "$(git -C "$wt" rev-parse HEAD)" != "$base" ] || die "$LB_FULL: nothing to save"
     mkdir -p "$LB_RECIPE_DIR/patches"
     local n
-    n=$(ls "$LB_RECIPE_DIR/patches" 2>/dev/null | grep -oE '^[0-9]{4}' | sort -n | tail -1)
+    n=$(ls "$LB_RECIPE_DIR/patches" 2>/dev/null | grep -oE '^[0-9]{4}' | sort -n | tail -1 || true)
     n=$((10#${n:-0}))
     local c count=0
     for c in $(git -C "$wt" rev-list --reverse "$base..HEAD"); do
