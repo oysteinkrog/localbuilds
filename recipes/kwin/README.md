@@ -1,25 +1,34 @@
-KWin 6.7.5 with "Resizable Virtual Monitors" backported from 6.8, as kwin-local.
+KWin 6.8.1 with two local fixes, as kwin-local.
 
-It replaces the distro kwin package (`provides=(kwin=6.7.5)`, `conflicts=(kwin)`).
-The build steps and dependencies are copied from the Arch kwin 6.7.5 PKGBUILD.
+It replaces the distro kwin package (`provides=(kwin=6.8.1)`, `conflicts=(kwin)`).
+The build steps and dependencies are copied from the Arch kwin 6.8.1 PKGBUILD.
 
-| Fork branch | Commit | Why |
+All changes are on the fork branch `oystein/kwin-6.8.1-local`, off `v6.8.1`:
+
+| Commits | Why | Upstream-Status |
 |---|---|---|
-| `oystein/resizable-virtual-monitors` | cherry-pick of KWin MR 7932 onto v6.7.5 | lets KRDP resize its virtual monitor to the RDP client window |
-| `oystein/maximized-output-change` | 3 commits on top of the branch above | maximized windows keep the right size when monitors are turned on or off or change mode (remote mode switches) |
+| 3 placementtracker and xdgshellwindow commits | maximized windows keep the right size when monitors are turned on or off or change mode (remote mode switches) | local-only; KWin master still had both bugs on 2026-10-18 |
+| 1 workspace commit | a DDC/CI brightness device still finds its output when the output's EDID is overridden (edid-add-mode on the RDP monitor): falls back to vendor, product code and serial when no exact EDID match exists | local-only; 6.8 still matches with `startsWith` on the raw EDID |
 
-Upstream-Status: merged 6.8 (https://invent.kde.org/plasma/kwin/-/merge_requests/7932)
+Without the workspace commit the monitor with the EDID override gets no brightness slider.
 
-Upstream-Status for `oystein/maximized-output-change`: local-only, not sent upstream.
-KWin master (checked 2026-10-18) still has both bugs it fixes. Before dropping this
-recipe for Plasma 6.8, check whether 6.8 has them too.
+The 6.7.5 branches (`oystein/resizable-virtual-monitors`, `oystein/maximized-output-change`,
+`oystein/brightness-edid-fallback`) are history. The resizable virtual monitors backport
+(KWin MR 7932) is part of 6.8.
+
+## When the repos move past 6.8.1
+
+kwin-local must match the installed Plasma. A Plasma upgrade with an old kwin-local can
+leave the next login without a working desktop, and the old version no longer builds
+(on 2026-10-23 the 6.7.5 tree failed on a missing `kglobalaccel_interface.h`).
+`localbuild check` warns when the repos ship a different kwin. Then:
+
+1. Add a worktree at the new tag, cherry-pick the commits from `oystein/kwin-<old>-local`,
+   push as `oystein/kwin-<new>-local`.
+2. Update `PKGBUILD` from the Arch kwin PKGBUILD (depends, `provides`), and `recipe.sh`.
+3. `localbuild bump kwin <commit>`, build, install, then log out and in.
 
 ## Go back to the distro kwin
 
 `sudo pacman -S kwin` removes kwin-local and installs the repo package. Log out and in.
-
-## Remove after Plasma 6.8
-
-When the repos ship kwin 6.8, `pacman -Syu` will stop on the conflict with kwin-local.
-Run `sudo pacman -S kwin` as part of that upgrade, then delete this recipe.
-`localbuild check` warns once the repos have moved past 6.7.
+This loses both fixes.

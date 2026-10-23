@@ -1,14 +1,14 @@
-# KWin 6.7.5 with resizable virtual monitors backported from 6.8, as the pacman
-# package kwin-local. It replaces the distro kwin package.
+# KWin 6.8.1 with local fixes (maximized layout on output changes, brightness
+# device match for overridden EDIDs), as the pacman package kwin-local. It
+# replaces the distro kwin package.
 #
-# Changes live on the fork branch oystein/resizable-virtual-monitors (off v6.7.5).
-# Drop this recipe once Plasma 6.8 is installed: see README.md.
+# Changes live on the fork branch oystein/kwin-6.8.1-local (off v6.8.1).
 
 UPSTREAM=https://invent.kde.org/plasma/kwin.git
 FORK=https://github.com/oysteinkrog/kwin.git
 MODE=fork
 KIND=pkg
-PIN=0d44f7548d8db42110b3aed81c2e77837c887a1f
+PIN=a9a434cd0511e23381471ff8764a379488a287ab
 
 lb_pkgver() {
     local base
@@ -19,7 +19,7 @@ lb_pkgver() {
 lb_check() {
     local have; have=$(pacman -Q kwin-local 2>/dev/null | awk '{print $2}')
     case "$(pacman -Si kwin 2>/dev/null | awk '/^Version/{print $3; exit}')" in
-        6.7.*|"") ;;
-        *) warn "kwin: the repos now ship kwin 6.8 or newer; uninstall kwin-local (see recipes/kwin/README.md)" ;;
+        6.8.1-*|"") ;;
+        *) warn "kwin: the repos moved past kwin 6.8.1; rebase oystein/kwin-6.8.1-local and rebuild kwin-local before the next login (see recipes/kwin/README.md)" ;;
     esac
 }
