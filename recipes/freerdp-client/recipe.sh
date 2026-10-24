@@ -9,7 +9,7 @@ UPSTREAM=https://github.com/FreeRDP/FreeRDP.git
 FORK=https://github.com/oysteinkrog/FreeRDP.git
 MODE=fork
 KIND=pkg
-PIN=c4ba6f47b64ade4d0c1f4a080d90b7b2568b05c6
+PIN=21d44641ee0d86218386dafcfb1c654f7b0aa9fa
 SRC=$HOME/src/freerdp   # share the freerdp recipe's clone
 
 lb_pkgver() {
