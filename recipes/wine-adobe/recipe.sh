@@ -14,7 +14,7 @@ MODE=fork
 KIND=tree
 SRC=$HOME/src/wine
 BASE=wine-11.20
-PIN=748325ac5f89e577b1ae4d92c8e06b9daa6fb5ac
+PIN=09a7b88e1304b201d48a1d8f580295ad9c224adf
 
 lb_install_root() { echo "$HOME/.local/share/adobe-wine"; }
 
