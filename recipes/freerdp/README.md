@@ -17,6 +17,7 @@ the clients and krfb stays at the distro version. Its libraries carry an rpath t
 | `oystein/krdp-codecs` | codec/yuv: give each threaded encode work item only its own strip | each strip converted from its top to the bottom of the frame, about 45 times the work; KRDP used about 9 cores |
 | `oystein/krdp-codecs` | codec/h264: compare the 64x64 tiles on the thread pool | change detection took 5 to 9 ms per frame on one thread, now about 2 ms |
 | `oystein/krdp-codecs` | codec/h264: fix two bugs in the change detection for U, V and AVC444v2 chroma | colour-only changes could be missed, and AVC444v2 chroma rects pointed at the wrong screen areas |
+| `oystein/krdp-codecs` | dsp/ffmpeg: open the Opus encoder in low-delay mode with 10 ms frames | KRDP's sound to the client: libopus `application=lowdelay` and 10 ms frames instead of 20 ms in "audio" mode. KRDP feeds it one frame per call to match |
 
 ## Keeping it in step with the distro
 

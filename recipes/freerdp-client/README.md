@@ -8,7 +8,8 @@ rpath to `/opt/freerdp-client/lib`, so Remmina, KRDC and krfb keep the distro li
 
 | Fork branch | Commit | Why |
 |---|---|---|
-| `oystein/client-hw` | upstream tag 3.32.2 | matches the distro FreeRDP; no source changes |
+| `oystein/client-hw` | upstream tag 3.32.2 | matches the distro FreeRDP |
+| `oystein/client-hw` | dsp/ffmpeg: open the Opus encoder in low-delay mode with 10 ms frames | libopus defaults to 20 ms frames in "audio" mode (about 26.5 ms extra delay); this sets `application=lowdelay` and `frame_duration=10` for the microphone. `FREERDP_OPUS_APPLICATION` and `FREERDP_OPUS_FRAME_MS` override them |
 
 ## Hardware decode
 

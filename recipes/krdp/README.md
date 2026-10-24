@@ -45,6 +45,8 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | Video: keep and save recent AVC444 frames only with KRDP_AUTO_DUMP=1 | The saved frames are screen content, so they are opt-in |
 | Video: new surface on request, with or without ResetGraphics | On 2026-10-21 the purple survived a new encoder with a full-screen key frame on the same surface, and cleared when a client resize sent ResetGraphics and a new surface. `touch $XDG_RUNTIME_DIR/krdp-reset-now` repeats both; `krdp-surface-now` sends only the new surface |
 | Video: save the recent AVC444 frames on a requested new surface; ring size setting | With `KRDP_AUTO_DUMP=1` the triggers save the stream since the key frame first, for replay through the client's own decoder. `KRDP_AUTO_DUMP_MB` sets the ring size (48 MB by default) |
+| AudinStream: Opus 48 kHz microphone, with PCM 44.1 kHz as fallback | the microphone was uncompressed PCM at 44.1 kHz. KRDP now offers Opus at 48 kHz first (same `AudioBitrate`, skipped with `AudioCodec=PCM`) and sends its own Open PDU: FreeRDP's default hard-codes 441 frames per packet and sends the wrong format index |
+| Audio: feed the Opus encoder one frame of FREERDP_OPUS_FRAME_MS per call | the FreeRDP fork now uses 10 ms Opus frames; a 20 ms call would put two packets into one wave PDU, which the client cannot split |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
