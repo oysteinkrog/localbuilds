@@ -1,0 +1,19 @@
+# voxtype push-to-talk dictation with CUDA ONNX engines, my fork, as the pacman package
+# voxtype-cuda-local. Installs beside the AUR package voxtype-bin and reuses its bundled
+# ONNX Runtime 1.24.4 CUDA 13 libraries.
+#
+# Pinned to the fork branch voxtype-onnx-isolation: upstream tag v1.1.1 plus the
+# engine_isolation option (ONNX engines in a short-lived worker process) and the live
+# preview overlay. See README.
+
+UPSTREAM=https://github.com/peteonrails/voxtype.git
+FORK=https://github.com/oysteinkrog/voxtype.git
+MODE=fork
+KIND=pkg
+PIN=ea64c0d7d64e6a3df302dad199e4bf52c86909b1
+
+lb_pkgver() {
+    local ver
+    ver=$(sed -n '/^\[package\]/,/^\[/s/^version = "\(.*\)"/\1/p' "$LB_WORK/src/Cargo.toml" | head -1)
+    echo "${ver:-0}.g${LB_COMMIT:0:10}"
+}

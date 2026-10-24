@@ -1,0 +1,43 @@
+# Built by localbuild from the worktree in $LB_SRCDIR; not for use with plain makepkg.
+pkgname=voxtype-cuda-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="voxtype with CUDA ONNX engines (Cohere, Parakeet), engine_isolation and a live preview, built by localbuild"
+arch=(x86_64)
+url="https://github.com/peteonrails/voxtype"
+license=(MIT)
+makedepends=(rustup cmake clang)
+# voxtype-bin ships the ONNX Runtime CUDA 13 libraries, the OSD and the helper scripts.
+depends=(voxtype-bin cuda cudnn gtk4 gtk4-layer-shell)
+options=(!lto !debug !strip)
+
+_ortdir=/usr/lib/voxtype/cuda-13
+
+build() {
+    cd "$LB_SRCDIR"
+    # Same features as upstream's Dockerfile.onnx-cuda-13, cut to the engines used here.
+    # ORT_CUDA_VERSION only feeds build.rs, which bakes the CUDA major into the runtime
+    # probe; without it the binary rejects CUDA 13 hosts.
+    export ORT_CUDA_VERSION=13
+    unset CFLAGS CXXFLAGS
+    # osd-gtk4 builds the overlay with the live preview text. The daemon starts the
+    # voxtype-osd next to its own executable, so it must ship from this package.
+    nice -n 5 cargo build --release --locked --bins \
+        --features cohere-cuda,parakeet-cuda,parakeet-load-dynamic,onnx-load-dynamic,osd-gtk4 \
+        --config 'profile.release.lto=false' \
+        --config 'profile.release.codegen-units=8'
+}
+
+package() {
+    local b
+    for b in voxtype voxtype-osd voxtype-osd-gtk4; do
+        install -Dm755 "$LB_SRCDIR/target/release/$b" "$pkgdir/usr/lib/voxtype-local/$b"
+    done
+    # ort/load-dynamic opens libonnxruntime.so next to the executable.
+    local f
+    for f in libonnxruntime.so libonnxruntime.so.1.24.4 libonnxruntime_providers_cuda.so \
+        libonnxruntime_providers_shared.so; do
+        ln -s "$_ortdir/$f" "$pkgdir/usr/lib/voxtype-local/$f"
+    done
+    install -Dm644 "$LB_SRCDIR/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
