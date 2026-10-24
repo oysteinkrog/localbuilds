@@ -20,10 +20,19 @@ lb_install_root() { echo "$HOME/.local/share/adobe-wine"; }
 
 _wine_system_version() { /usr/bin/wine --version 2>/dev/null; }
 
-# Modules the fork changes on top of BASE, from the paths dlls/<module>/...
+# Modules the fork changes on top of BASE, from the paths dlls/<module>/..., plus the
+# modules built from their sources through PARENTSRC (comctl32_v6 builds from comctl32,
+# and that is the copy apps with a common-controls 6 manifest load).
 _wine_modules() {
-    git -C "$LB_WORK/src" diff --name-only "$BASE" HEAD -- dlls \
-        | cut -d/ -f2 | sort -u
+    local changed m
+    changed=$(git -C "$LB_WORK/src" diff --name-only "$BASE" HEAD -- dlls | cut -d/ -f2 | sort -u)
+    {
+        echo "$changed"
+        for m in $changed; do
+            grep -l "^PARENTSRC *= *\.\./$m\$" "$LB_WORK"/src/dlls/*/Makefile.in 2>/dev/null \
+                | xargs -r -n1 dirname | xargs -r -n1 basename
+        done
+    } | sort -u
 }
 
 lb_build() {
