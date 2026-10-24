@@ -1,0 +1,40 @@
+# Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
+# Client side only: xfreerdp3 and sdl-freerdp3 with their channels.
+pkgname=freerdp-client-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="FreeRDP 3 clients in /opt/freerdp-client with VA-API H.264 decode and Opus, built by localbuild"
+arch=(x86_64)
+url="https://github.com/oysteinkrog/FreeRDP"
+license=(Apache-2.0)
+depends=(ffmpeg fuse3 glibc icu krb5 libjpeg-turbo libpng libpulse libsoxr libusb libva
+         libwebp libx11 libxcursor libxext libxfixes libxi libxinerama libxkbfile libxrandr
+         libxrender libxv opus openssl pkcs11-helper sdl3 sdl3_ttf systemd-libs zlib)
+makedepends=(cmake ninja)
+options=(!debug)
+
+build() {
+    cmake -B build -S "$LB_SRCDIR" -G Ninja -W no-dev \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/freerdp-client \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_INSTALL_RPATH=/opt/freerdp-client/lib \
+        -DWITH_BINARY_VERSIONING=ON \
+        -DWITH_CLIENT=ON -DWITH_CLIENT_CHANNELS=ON -DWITH_CHANNELS=ON \
+        -DWITH_CLIENT_SDL=ON -DWITH_CLIENT_SDL3=ON -DWITH_CLIENT_SDL2=OFF -DWITH_X11=ON \
+        -DWITH_SERVER=OFF -DWITH_SERVER_CHANNELS=OFF -DWITH_SAMPLE=OFF -DWITH_SHADOW=OFF \
+        -DWITH_PROXY=OFF -DWITH_PROXY_APP=OFF \
+        -DWITH_FFMPEG=ON -DWITH_DSP_FFMPEG=ON -DWITH_SWSCALE=ON -DWITH_FFMPEG_HWACCEL=ON \
+        -DWITH_OPUS=ON -DWITH_SOXR=ON \
+        -DWITH_PULSE=ON -DWITH_ALSA=OFF -DWITH_OSS=OFF -DWITH_SNDIO=OFF \
+        -DWITH_ICU=ON -DWITH_JPEG=ON -DWITH_SYSTEMD=ON -DWITH_FUSE=ON -DWITH_KRB5=ON \
+        -DWINPR_UTILS_IMAGE_JPEG=ON -DWINPR_UTILS_IMAGE_PNG=ON -DWINPR_UTILS_IMAGE_WEBP=ON \
+        -DWITH_WAYLAND=OFF -DWITH_CUPS=OFF -DWITH_PCSC=OFF -DWITH_SMARTCARD_EMULATE=OFF \
+        -DWITH_AAD=OFF -DWITH_WINPR_TOOLS=OFF -DWITH_MANPAGES=OFF \
+        -DWITH_VERBOSE_WINPR_ASSERT=OFF -DBUILD_TESTING=OFF
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
