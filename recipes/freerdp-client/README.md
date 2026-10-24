@@ -12,6 +12,7 @@ rpath to `/opt/freerdp-client/lib`, so Remmina, KRDC and krfb keep the distro li
 | `oystein/client-hw` | dsp/ffmpeg: open the Opus encoder in low-delay mode with 10 ms frames | libopus defaults to 20 ms frames in "audio" mode (about 26.5 ms extra delay); this sets `application=lowdelay` and `frame_duration=10` for the microphone. `FREERDP_OPUS_APPLICATION` and `FREERDP_OPUS_FRAME_MS` override them |
 | `oystein/client-hw` | rdpgfx: private H.265 4:4:4 codec (RDPGFX_CODECID_HEVC444) | RDP has no H.265 codec. With `FREERDP_GFX_HEVC444=1` the client asks for this one in its 10.7 caps set, and a KRDP built from the krdp recipe with `VideoCodec=HEVC444` sends one H.265 Main 4:4:4 picture per frame. It decodes through the same FFmpeg path as H.264, so VA-API works with `/gdi:hw` |
 | `oystein/client-hw` | gdi/gfx: switch a surface back to H.264 after H.265 4:4:4 | KRDP falls back to AVC444 when its GPU path fails; the decoder must leave H.265 mode for that |
+| `oystein/client-hw` | client/X11: smart sizing keeps the desktop's aspect ratio | `+smart-sizing` stretched the picture to the window's shape; it now fits it with black bars. `FREERDP_SMART_SIZING_STRETCH=1` stretches again |
 
 ## Hardware decode
 
