@@ -49,6 +49,9 @@ lb_build() {
     mapfile -t mods < <(_wine_modules)
     echo "modules: ${mods[*]}"
     local targets=(); for m in "${mods[@]}"; do targets+=("dlls/$m/all"); done
+    # wineserver too, when the branch changes it
+    local server=0
+    git -C "$LB_WORK/src" diff --quiet "$BASE" HEAD -- server || { server=1; targets+=(server/all); }
     make -C build -j"$(nproc)" "${targets[@]}"
 
     # Stage a full copy of the system Wine, then lay the rebuilt modules over it.
@@ -60,6 +63,7 @@ lb_build() {
     for tool in wine wineserver wineboot winecfg wineconsole winepath winedbg msiexec regedit; do
         [ -e "/usr/bin/$tool" ] && cp -a "/usr/bin/$tool" out/bin/
     done
+    [ "$server" = 1 ] && cp build/server/wineserver out/bin/wineserver
     local f
     for m in "${mods[@]}"; do
         for f in build/dlls/"$m"/x86_64-windows/*.{dll,exe,drv,sys}; do
