@@ -10,7 +10,7 @@ UPSTREAM=https://github.com/peteonrails/voxtype.git
 FORK=https://github.com/oysteinkrog/voxtype.git
 MODE=fork
 KIND=pkg
-PIN=5f0fea3bd51575b835c30fd003ec043f99e7bba4
+PIN=ae7f17dbf5ec250bd785f532254749a19ceb1cbe
 
 lb_pkgver() {
     local ver
