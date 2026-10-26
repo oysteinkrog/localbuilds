@@ -1,0 +1,29 @@
+# Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
+# Build steps and depends copied from the Arch ddcutil 3.0.2 PKGBUILD.
+pkgname=ddcutil-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="ddcutil 3.0.2 with a fix for displays stuck as disconnected (oysteinkrog fork), built by localbuild"
+arch=(x86_64)
+url="https://github.com/oysteinkrog/ddcutil"
+license=(GPL-2.0-or-later)
+depends=(glibc glib2 i2c-tools libusb libdrm jansson libx11 libxext libxrandr systemd-libs acl dbus)
+provides=(ddcutil=3.0.2)
+conflicts=(ddcutil)
+options=(!debug)
+
+# localbuild runs makepkg with --noextract, which skips prepare(), so everything is in build().
+build() {
+    # autoreconf writes into the tree, so build from an export and keep the worktree clean.
+    mkdir -p ddcutil
+    git -C "$LB_SRCDIR" archive HEAD | tar -x -C ddcutil
+    cd ddcutil
+    autoreconf -fiv
+    ./configure --prefix=/usr --disable-build-timestamp
+    make
+}
+
+package() {
+    cd ddcutil
+    make DESTDIR="$pkgdir" install
+}
