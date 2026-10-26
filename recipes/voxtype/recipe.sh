@@ -11,7 +11,7 @@ FORK=https://github.com/oysteinkrog/voxtype.git
 MODE=fork
 SRC=$HOME/work/voxtype   # the fork lives with the other repos in ~/work
 KIND=pkg
-PIN=57833773932a3fdef5c465521095dd0cfe92f4ab
+PIN=af01ac5af03dd3b129160fcc69061193a20a9de2
 
 lb_pkgver() {
     local ver
