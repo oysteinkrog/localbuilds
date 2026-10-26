@@ -183,6 +183,9 @@ lb_cmd_build() {
     (
         cd "$LB_WORK"
         export LB_WORK LB_ID LB_NAME LB_VARIANT LB_COMMIT LB_RECIPE_DIR
+        # libtool's configure runs `mt -?` to look for the Windows manifest tool; a
+        # different `mt` on PATH that never exits hangs every autotools build
+        export MANIFEST_TOOL=:
         if [ "$KIND" = pkg ]; then lb_build_pkg; else lb_build; fi
     ) >> "$LB_WORK/build.log" 2>&1 || { tail -20 "$LB_WORK/build.log" >&2; die "$LB_FULL: build failed"; }
     lb_buildinfo > "$LB_WORK/out/BUILDINFO"
