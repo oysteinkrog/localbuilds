@@ -1,5 +1,9 @@
 # cass with CUDA embedding, my fork, as the pacman package cass-gpu-local
 
+Retired on 2026-10-23: the `cass` recipe now builds the CUDA commits on v0.10.0, so one
+installed `cass` does both lexical and GPU work. This recipe stays pinned to the old base
+for reference; do not install it.
+
 This is the same program as the `cass` recipe, built from the fork branch
 `gpu-cuda-native` with `--features cuda`. The semantic embedder (all-MiniLM-L6-v2) then runs
 large batches on the NVIDIA GPU through candle. Lexical indexing and search are unchanged.

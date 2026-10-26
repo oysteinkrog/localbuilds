@@ -1,9 +1,9 @@
 # Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
-# Build steps and depends copied from the Arch kwin 6.7.5 PKGBUILD.
+# Build steps and depends copied from the Arch kwin 6.8.1 PKGBUILD.
 pkgname=kwin-local
 pkgver=$LB_PKGVER
 pkgrel=$LB_PKGREL
-pkgdesc="KWin 6.7.5 with resizable virtual monitors from 6.8 (oysteinkrog fork), built by localbuild"
+pkgdesc="KWin 6.8.1 with local fixes (oysteinkrog fork), built by localbuild"
 arch=(x86_64)
 url="https://github.com/oysteinkrog/kwin"
 license=(LGPL-2.0-or-later)
@@ -33,6 +33,7 @@ depends=(aurorae
          knotifications
          kpackage
          kquickcharts
+         krunner
          kscreenlocker
          kservice
          ksvg
@@ -71,7 +72,7 @@ depends=(aurorae
          xcb-util-wm)
 makedepends=(extra-cmake-modules kdoctools krunner plasma-wayland-protocols python
              vulkan-headers wayland-protocols xorg-xwayland)
-provides=(kwin=6.7.5)
+provides=(kwin=6.8.1)
 conflicts=(kwin)
 options=(!debug)
 
