@@ -9,7 +9,9 @@ and `~/.local/bin/cass-gpu` are symlinks to it for scripts that use the old path
 
 | Branch | What it is |
 |---|---|
-| `local/v0.10.0-cuda` | what is built: upstream tag v0.10.0 plus the six commits below |
+| `local/v0.10.0-stream` | what is built: `local/v0.10.0-cuda` plus streamed ingest of big Claude Code transcripts (see below) |
+| `local/v0.10.0-fsqlite-probe` | fallback: `local/v0.10.0-cuda` plus the fsqlite startup fix only |
+| `local/v0.10.0-cuda` | upstream tag v0.10.0 plus the six commits below |
 | `local/v0.10.0` | v0.10.0 plus the two ledger fixes only, without CUDA |
 | `local/ledger-folder-pinned` | the old build: upstream 4773d03e plus the ledger fixes and the contract pin |
 | `main-latest` | upstream 4773d03e, the old base |
@@ -38,6 +40,16 @@ the tag on a new `local/<tag>-cuda` branch, push it to the fork and run
    (all-MiniLM-L6-v2) runs large batches on the NVIDIA GPU through candle. Lexical
    indexing and search are unchanged. Upstream-Status: local only; upstream will not take
    CUDA in the binary (#481).
+
+4. **Streamed ingest of big transcripts (`local/v0.10.0-stream`).** Claude Code
+   transcripts are read in parts and resumed from a saved offset when they only grew, so
+   a 686 MiB transcript peaks at about 1.6 GiB instead of over 5 GiB. A line over 32 MiB
+   is parsed in a stream: its first 16 MiB of text is indexed with a truncation marker
+   and the session goes on. Cargo.toml takes `franken-agent-detection` and
+   `fsqlite-core` from local git clones under `/var/tmp/claude/cass-stream/` (pushed as
+   `local/v0.3.3-stream` on oysteinkrog/franken_agent_detection and
+   `local/v0.4.6-memdb-probe` on oysteinkrog/frankensqlite). The fsqlite fix stops a
+   start-up probe that read the whole database. Upstream-Status: local only for now.
 
 The contract pin of the old build (`build.rs` emitting the 4773d03e contract) is
 dropped. The first `cass index` on v0.10.0 rebuilds the lexical index once anyway.
