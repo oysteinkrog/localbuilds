@@ -1,7 +1,7 @@
 # FrankenTerm fork, built as the pacman package frankenterm-local.
 #
 # Changes live as commits on the fork (branch oystein/linux-setup and topic branches off
-# it). To ship a change: commit and push it in ~/src/frankenterm, then
+# it). To ship a change: commit and push it in ~/projects/frankenterm, then
 # `localbuild bump frankenterm <commit>`, build, commit the recipe, install.
 
 UPSTREAM=https://github.com/Dicklesworthstone/frankenterm.git
@@ -9,6 +9,7 @@ FORK=https://github.com/oysteinkrog/frankenterm.git
 MODE=fork
 KIND=pkg
 PIN=fc9a29a0
+SRC=$HOME/projects/frankenterm   # my forks live in ~/projects
 
 lb_pkgver() {
     local ver
