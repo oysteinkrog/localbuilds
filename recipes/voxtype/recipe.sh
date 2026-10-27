@@ -9,7 +9,8 @@
 UPSTREAM=https://github.com/peteonrails/voxtype.git
 FORK=https://github.com/oysteinkrog/voxtype.git
 MODE=fork
-SRC=$HOME/work/voxtype   # the fork lives with the other repos in ~/work
+SRC=$HOME/projects/voxtype   # my forks live in ~/projects; ~/work until the office move
+[ -d "$SRC" ] || SRC=$HOME/work/voxtype
 KIND=pkg
 PIN=d2938dff26143d85f0c94356338b0b61e03f5953
 

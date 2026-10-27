@@ -1,7 +1,7 @@
 # cass agent session search, my fork with CUDA embedding, as the pacman package cass-local
 
 Upstream is `Dicklesworthstone/coding_agent_session_search`; my fork is
-`oysteinkrog/coding_agent_session_search`. The clone lives at `~/work/cass-gpu` (older
+`oysteinkrog/coding_agent_session_search`. The clone lives at `~/projects/cass-gpu` (older
 scripts and docs use that path). The package installs `/usr/bin/cass`; `~/.local/bin/cass`
 and `~/.local/bin/cass-gpu` are symlinks to it for scripts that use the old path.
 

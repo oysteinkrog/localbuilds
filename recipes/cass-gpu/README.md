@@ -40,6 +40,6 @@ and `CASS_CUDA_TOKEN_BUDGET` (default 32768 padded tokens per GPU pass) tune bat
 
 ## Notes
 
-- Same clone as the `cass` recipe: `~/work/cass-gpu`.
+- Same clone as the `cass` recipe: `~/projects/cass-gpu` (`~/work/cass-gpu` on an older layout).
 - `cass upgrade` must not replace this build, as for `cass`.
 - Setup and recovery: `~/.dotfiles/docs/cass-setup.md`.

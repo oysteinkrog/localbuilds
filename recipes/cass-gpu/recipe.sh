@@ -8,7 +8,8 @@ UPSTREAM=https://github.com/Dicklesworthstone/coding_agent_session_search.git
 FORK=https://github.com/oysteinkrog/coding_agent_session_search.git
 MODE=fork
 KIND=pkg
-SRC=$HOME/work/cass-gpu
+SRC=$HOME/projects/cass-gpu   # my forks live in ~/projects; ~/work until the office move
+[ -d "$SRC" ] || SRC=$HOME/work/cass-gpu
 PIN=b6cada65439b68021cf3b6505abfe07025bd854c
 
 lb_pkgver() {
