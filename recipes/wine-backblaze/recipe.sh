@@ -14,7 +14,7 @@ MODE=fork
 KIND=tree
 SRC=$HOME/src/wine
 BASE=wine-11.20
-PIN=71d1fbeda0b78652b49c32f12c8ab7cdbd1f5723
+PIN=a27b7458e06ace096796e71925375e5c06a32bd1
 
 lb_install_root() { echo "$HOME/.local/share/backblaze-wine"; }
 
