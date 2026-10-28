@@ -10,7 +10,7 @@ MODE=fork
 KIND=pkg
 SRC=$HOME/projects/cass-gpu   # my forks live in ~/projects; ~/work until the office move
 [ -d "$SRC" ] || SRC=$HOME/work/cass-gpu
-PIN=11ed976da15430871e3e025aec9988eaa6227cdb
+PIN=6e30bda9858ce6b63ad82cfc4a86bae0cfd1dd16
 
 lb_pkgver() {
     local ver

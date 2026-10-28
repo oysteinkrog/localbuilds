@@ -41,15 +41,20 @@ the tag on a new `local/<tag>-cuda` branch, push it to the fork and run
    indexing and search are unchanged. Upstream-Status: local only; upstream will not take
    CUDA in the binary (#481).
 
-4. **Streamed ingest of big transcripts (`local/v0.10.0-stream`).** Claude Code
+4. **Streamed ingest of big transcripts (`local/v0.10.0-stream`).** Claude Code and Codex
    transcripts are read in parts and resumed from a saved offset when they only grew, so
-   a 686 MiB transcript peaks at about 1.6 GiB instead of over 5 GiB. A line over 32 MiB
-   is parsed in a stream: its first 16 MiB of text is indexed with a truncation marker
-   and the session goes on. Cargo.toml takes `franken-agent-detection` and
-   `fsqlite-core` from local git clones under `/var/tmp/claude/cass-stream/` (pushed as
-   `local/v0.3.3-stream` on oysteinkrog/franken_agent_detection and
-   `local/v0.4.6-memdb-probe` on oysteinkrog/frankensqlite). The fsqlite fix stops a
-   start-up probe that read the whole database. Upstream-Status: local only for now.
+   a 686 MiB transcript peaks at about 1.6 GiB instead of over 5 GiB. No text is cut: a
+   message over 4 MiB is stored as chunk rows, and a conversation that runs out of memory
+   is ingested in halves instead of being quarantined. Cargo.toml takes
+   `franken-agent-detection` and `fsqlite-core` from the oysteinkrog forks on GitHub. The
+   fsqlite fix stops a start-up probe that read the whole database. Upstream-Status: local
+   only for now.
+5. **Phrase search across chunk cuts (step 6, 6e30bda9).** The lexical document of each
+   chunk holds its own text plus the first 64 KiB (plus one token) of the next chunk, so a
+   phrase up to 64 KiB long matches across a cut. Search shows one hit per split message.
+   Semantic embedding and daily stats read each row's own text. The first install needs one
+   `cass index --force-rebuild` so old chunk documents get their heads. Upstream-Status:
+   local only for now.
 
 The contract pin of the old build (`build.rs` emitting the 4773d03e contract) is
 dropped. The first `cass index` on v0.10.0 rebuilds the lexical index once anyway.
