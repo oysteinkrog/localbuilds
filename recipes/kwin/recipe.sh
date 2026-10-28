@@ -23,3 +23,11 @@ lb_check() {
         *) warn "kwin: the repos moved past kwin 6.8.1; rebase oystein/kwin-6.8.1-local and rebuild kwin-local before the next login (see recipes/kwin/README.md)" ;;
     esac
 }
+
+# kwin links Qt private API and Plasma libraries, so any change there needs a rebuild
+# even with the same pin (a qt6-base update on 2026-10-11 left no desktop at the next login).
+lb_system_inputs() {
+    pacman -Q qt6-base qt6-declarative kconfig kcoreaddons kwindowsystem \
+        kdecoration kglobalacceld kscreenlocker kwayland libplasma plasma-activities \
+        plasma-workspace 2>&1 || true
+}

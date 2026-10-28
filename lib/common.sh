@@ -12,8 +12,9 @@
 #   VARIANTS  optional, space separated; variant v uses series.v instead of series
 #   SHA512    checksum of the release file (binary mode only); the PKGBUILD gets it as $LB_SHA512
 # and may define the functions lb_build (required for tree), lb_install_root (tree),
-# lb_pkgver (pkg), lb_check and lb_pin_hash (binary: print the SHA512 for the version in $1,
-# so `localbuild bump` can update SHA512 too).
+# lb_pkgver (pkg), lb_check, lb_pin_hash (binary: print the SHA512 for the version in $1,
+# so `localbuild bump` can update SHA512 too) and lb_system_inputs (print the installed
+# versions of system packages the build links against; a change gives a new build ID).
 
 LB_CACHE=${LB_CACHE:-$HOME/.cache/build}
 LB_STATE=${LB_STATE:-$HOME/.local/state/localbuild}
@@ -33,7 +34,7 @@ lb_load() {
     [ -f "$LB_RECIPE_DIR/recipe.sh" ] || die "no recipe: recipes/$LB_NAME/recipe.sh"
 
     UPSTREAM="" MODE="" KIND="" PIN="" FORK="" VARIANTS="" SHA512=""
-    unset -f lb_build lb_install_root lb_pkgver lb_check lb_pin_hash 2>/dev/null || true
+    unset -f lb_build lb_install_root lb_pkgver lb_check lb_pin_hash lb_system_inputs 2>/dev/null || true
     SRC=$HOME/src/$LB_NAME
     . "$LB_RECIPE_DIR/recipe.sh"
     [ -n "$UPSTREAM" ] && [ -n "$PIN" ] || die "$LB_NAME: recipe must set UPSTREAM and PIN"
@@ -77,7 +78,8 @@ lb_series_list() {
     _lb_read_series "$LB_SERIES_FILE"
 }
 
-# The build ID changes whenever any input changes: pin, recipe, series, patch bytes, PKGBUILD.
+# The build ID changes whenever any input changes: pin, recipe, series, patch bytes, PKGBUILD,
+# and the system package versions from lb_system_inputs.
 lb_identity() {
     local hash
     hash=$({
@@ -86,6 +88,7 @@ lb_identity() {
         if [ -f "$LB_SERIES_FILE" ]; then cat "$LB_SERIES_FILE"; fi
         local p; for p in "${LB_PATCHES[@]}"; do basename "$p"; cat "$p"; done
         if [ -f "$LB_RECIPE_DIR/PKGBUILD" ]; then cat "$LB_RECIPE_DIR/PKGBUILD"; fi
+        if declare -F lb_system_inputs >/dev/null; then lb_system_inputs; fi
     } | sha256sum | cut -c1-10)
     local pin=$PIN
     if [[ $pin =~ ^[0-9a-f]{40}$ ]]; then pin=${pin:0:10}; fi
