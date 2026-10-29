@@ -240,7 +240,9 @@ lb_cmd_install() {
         local pkg
         pkg=$(ls "$LB_WORK"/out/*.pkg.tar.* | grep -v '\.sig$' | head -1)
         [ -f "$state.installed" ] && cp "$state.installed" "$state.previous"
-        sudo pacman -U --noconfirm "$pkg"
+        # --noconfirm alone answers no to "remove the distro package it conflicts with?";
+        # --ask 4 (ALPM_QUESTION_CONFLICT_PKG) answers yes to that question only
+        sudo pacman -U --noconfirm --ask 4 "$pkg"
         printf '%s\n%s\n' "$LB_ID" "$pkg" > "$state.installed"
     else
         local root; root=$(lb_install_root)
