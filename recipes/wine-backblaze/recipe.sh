@@ -14,7 +14,7 @@ MODE=fork
 KIND=tree
 SRC=$HOME/src/wine
 BASE=wine-11.20
-PIN=9a75bb8f26e985f7c965554da1bc678435205872
+PIN=4780e4750a1635ba4532f68560a36933e196e574
 
 lb_install_root() { echo "$HOME/.local/share/backblaze-wine"; }
 
@@ -49,7 +49,7 @@ lb_build() {
     mapfile -t mods < <(_wine_modules)
     echo "modules: ${mods[*]}"
     local targets=(); for m in "${mods[@]}"; do targets+=("dlls/$m/all"); done
-    make -C build -j"$(nproc)" "${targets[@]}" server/wineserver
+    make -C build -j"$(nproc)" "${targets[@]}" server/wineserver || return 1
 
     # Stage a full copy of the system Wine, then lay the rebuilt modules over it.
     rm -rf out/bin out/lib out/share
