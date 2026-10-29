@@ -1,9 +1,9 @@
-KWin 6.8.1 with two local fixes, as kwin-local.
+KWin 6.8.2 with two local fixes, as kwin-local.
 
-It replaces the distro kwin package (`provides=(kwin=6.8.1)`, `conflicts=(kwin)`).
-The build steps and dependencies are copied from the Arch kwin 6.8.1 PKGBUILD.
+It replaces the distro kwin package (`provides=(kwin=6.8.2)`, `conflicts=(kwin)`).
+The build steps and dependencies are copied from the Arch kwin 6.8.2 PKGBUILD.
 
-All changes are on the fork branch `oystein/kwin-6.8.1-local`, off `v6.8.1`:
+All changes are on the fork branch `oystein/kwin-6.8.2-local`, off `v6.8.2`:
 
 | Commits | Why | Upstream-Status |
 |---|---|---|
@@ -16,7 +16,7 @@ The 6.7.5 branches (`oystein/resizable-virtual-monitors`, `oystein/maximized-out
 `oystein/brightness-edid-fallback`) are history. The resizable virtual monitors backport
 (KWin MR 7932) is part of 6.8.
 
-## When the repos move past 6.8.1
+## When the repos move past 6.8.2
 
 kwin-local must match the installed Plasma. A Plasma upgrade with an old kwin-local can
 leave the next login without a working desktop, and the old version no longer builds

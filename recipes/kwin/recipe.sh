@@ -1,14 +1,14 @@
-# KWin 6.8.1 with local fixes (maximized layout on output changes, brightness
+# KWin 6.8.2 with local fixes (maximized layout on output changes, brightness
 # device match for overridden EDIDs), as the pacman package kwin-local. It
 # replaces the distro kwin package.
 #
-# Changes live on the fork branch oystein/kwin-6.8.1-local (off v6.8.1).
+# Changes live on the fork branch oystein/kwin-6.8.2-local (off v6.8.2).
 
 UPSTREAM=https://invent.kde.org/plasma/kwin.git
 FORK=https://github.com/oysteinkrog/kwin.git
 MODE=fork
 KIND=pkg
-PIN=a9a434cd0511e23381471ff8764a379488a287ab
+PIN=64db21467bdcd8f27d768d2b07443ec966f0245b
 
 lb_pkgver() {
     local base
@@ -19,8 +19,8 @@ lb_pkgver() {
 lb_check() {
     local have; have=$(pacman -Q kwin-local 2>/dev/null | awk '{print $2}')
     case "$(pacman -Si kwin 2>/dev/null | awk '/^Version/{print $3; exit}')" in
-        6.8.1-*|"") ;;
-        *) warn "kwin: the repos moved past kwin 6.8.1; rebase oystein/kwin-6.8.1-local and rebuild kwin-local before the next login (see recipes/kwin/README.md)" ;;
+        6.8.2-*|"") ;;
+        *) warn "kwin: the repos moved past kwin 6.8.2; rebase oystein/kwin-6.8.2-local and rebuild kwin-local before the next login (see recipes/kwin/README.md)" ;;
     esac
 }
 
