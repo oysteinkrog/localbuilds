@@ -12,7 +12,7 @@ MODE=fork
 SRC=$HOME/projects/voxtype   # my forks live in ~/projects; ~/work until the office move
 [ -d "$SRC" ] || SRC=$HOME/work/voxtype
 KIND=pkg
-PIN=0fcb85327b1924c2d7a6e070708aa391fb162b05
+PIN=b32bfd2a50c7c8c4141c4c6140533a3ce126b050
 
 lb_pkgver() {
     local ver
