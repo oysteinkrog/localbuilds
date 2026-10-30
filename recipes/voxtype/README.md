@@ -23,6 +23,16 @@ voxtype push-to-talk dictation with CUDA ONNX engines, engine_isolation and a li
 - The systemd user unit runs this binary directly, so `voxtype setup` resetting
   `/usr/bin/voxtype` does not change the daemon.
 
+## CPU target
+
+The package is built for x86-64-v3 (AVX2, FMA, BMI2), not for the build host's CPU:
+the PKGBUILD sets `RUSTFLAGS` itself, because a `makepkg.conf.d/rust.conf` with
+`target-cpu=native` would tie the binary to the machine that built it. One build then
+installs on every machine with an x86-64-v3 CPU (Intel Haswell and newer, AMD Zen and
+newer). Check with `objdump -d /usr/lib/voxtype-local/voxtype | grep -c zmm`, which
+should print 0. ONNX Runtime is a separate library and picks its own CPU code at run
+time.
+
 ## Live preview model
 
 The preview runs `parakeet-unified-en-0.6b` on the CPU. The fp32 download is 2.4 GB and

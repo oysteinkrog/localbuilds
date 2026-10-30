@@ -20,6 +20,10 @@ build() {
     # probe; without it the binary rejects CUDA 13 hosts.
     export ORT_CUDA_VERSION=13
     unset CFLAGS CXXFLAGS
+    # One package for every machine: makepkg.conf.d/rust.conf may set
+    # target-cpu=native, which ties the binary to the build host's CPU.
+    # x86-64-v3 (AVX2, FMA, BMI2) runs on every machine this recipe targets.
+    export RUSTFLAGS="-C opt-level=3 -C target-cpu=x86-64-v3"
     # osd-gtk4 builds the overlay with the live preview text. The daemon starts the
     # voxtype-osd next to its own executable, so it must ship from this package.
     nice -n 5 cargo build --release --locked --bins \
