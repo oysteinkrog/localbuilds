@@ -16,8 +16,10 @@ voxtype push-to-talk dictation with CUDA ONNX engines, engine_isolation and a li
 
 ## Layout
 
-- Binaries: `/usr/lib/voxtype-local/{voxtype,voxtype-osd,voxtype-osd-gtk4}`. The daemon
-  starts the `voxtype-osd` next to its own executable, so the patched overlay ships here.
+- Binaries: `/usr/lib/voxtype-local/{voxtype,voxtype-osd,voxtype-osd-gtk4,voxtype-osd-vo}`.
+  The daemon starts the `voxtype-osd` next to its own executable, so the patched overlay
+  ships here. `voxtype-osd-vo` links `libxkbcommon` for keyboard edits in the popup, so the
+  package depends on it.
   Beside them are symlinks to the ONNX Runtime CUDA 13
   libraries that `voxtype-bin` installs in `/usr/lib/voxtype/cuda-13/`.
 - The systemd user unit runs this binary directly, so `voxtype setup` resetting

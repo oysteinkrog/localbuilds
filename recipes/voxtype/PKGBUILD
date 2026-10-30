@@ -16,7 +16,8 @@ license=(MIT)
 makedepends=(rustup cmake clang)
 # voxtype-bin ships the ONNX Runtime 1.24.4 libraries (a CUDA 13 build, which also runs
 # on the CPU alone), the OSD and the helper scripts.
-depends=(voxtype-bin gtk4 gtk4-layer-shell)
+# voxtype-osd-vo (osd-vo) links libxkbcommon for keyboard edits in the popup.
+depends=(voxtype-bin gtk4 gtk4-layer-shell libxkbcommon)
 [ "$_ep" = cuda ] && depends+=(cuda cudnn)
 provides=(voxtype-local)
 options=(!lto !debug !strip)
