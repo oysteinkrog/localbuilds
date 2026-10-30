@@ -1,12 +1,12 @@
-Plasma Login Manager 6.8.1 with a setting to turn off the login screen wallpaper blur, as plasma-login-manager-local.
+Plasma Login Manager 6.8.2 with a setting to turn off the login screen wallpaper blur, as plasma-login-manager-local.
 
-It replaces the distro plasma-login-manager package (`provides=(plasma-login-manager=6.8.1)`,
+It replaces the distro plasma-login-manager package (`provides=(plasma-login-manager=6.8.2)`,
 `conflicts=(plasma-login-manager)`). The build steps and dependencies are copied from the Arch
-plasma-login-manager 6.8.1 PKGBUILD.
+plasma-login-manager 6.8.2 PKGBUILD.
 
 | Fork branch | Commit | Why |
 |---|---|---|
-| `oystein/no-wallpaper-blur` | 1 commit on v6.8.1 | adds `BlurWallpaper` in `[Greeter]` of `/etc/plasmalogin.conf`. The greeter blurs, dims and recolours the wallpaper behind the login form, which hides the shader wallpaper. `BlurWallpaper=false` keeps it sharp. The default is true, so upstream behaviour is unchanged |
+| `oystein/no-wallpaper-blur-6.8.2` | 1 commit on v6.8.2 | adds `BlurWallpaper` in `[Greeter]` of `/etc/plasmalogin.conf`. The greeter blurs, dims and recolours the wallpaper behind the login form, which hides the shader wallpaper. `BlurWallpaper=false` keeps it sharp. The default is true, so upstream behaviour is unchanged |
 
 Upstream-Status: local-only, not sent upstream.
 

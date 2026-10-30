@@ -1,9 +1,9 @@
 # Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
-# Build steps and depends copied from the Arch plasma-login-manager 6.8.1 PKGBUILD.
+# Build steps and depends copied from the Arch plasma-login-manager 6.8.2 PKGBUILD.
 pkgname=plasma-login-manager-local
 pkgver=$LB_PKGVER
 pkgrel=$LB_PKGREL
-pkgdesc="Plasma Login Manager 6.8.1 with a setting to turn off the wallpaper blur (oysteinkrog fork), built by localbuild"
+pkgdesc="Plasma Login Manager 6.8.2 with a setting to turn off the wallpaper blur (oysteinkrog fork), built by localbuild"
 arch=(x86_64)
 url="https://github.com/oysteinkrog/plasma-login-manager"
 license=(GPL-2.0-or-later)
@@ -31,7 +31,7 @@ depends=(glibc
          sh
          systemd-libs)
 makedepends=(extra-cmake-modules qt6-tools)
-provides=(plasma-login-manager=6.8.1)
+provides=(plasma-login-manager=6.8.2)
 conflicts=(plasma-login-manager)
 options=(!debug)
 
