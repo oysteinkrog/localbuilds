@@ -11,6 +11,8 @@ usage() {
 localbuild status                       every recipe: pin, installed build, problems
 localbuild build <name>[@variant] [--dev]
                                         build in a fresh worktree under ~/.cache/build
+localbuild fetch <name>[@variant] --from <ssh host>
+                                        copy that build from another machine instead of building
 localbuild install <name>[@variant]     install the build that matches the recipe as committed
 localbuild rollback <name>[@variant]    point `current` back at the previous build (tree kind)
 localbuild shell <name>[@variant]       print the source worktree of the newest build, to edit in
@@ -26,6 +28,7 @@ cmd=${1:-help}; shift || true
 case "$cmd" in
     status)     lb_status ;;
     build)      lb_cmd_build "$@" ;;
+    fetch)      lb_cmd_fetch "$@" ;;
     install)    lb_cmd_install "$@" ;;
     rollback)   lb_cmd_rollback "$@" ;;
     shell)      lb_cmd_shell "$@" ;;

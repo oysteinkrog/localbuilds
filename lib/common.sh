@@ -262,6 +262,50 @@ lb_cmd_install() {
     say "installed $LB_FULL $LB_ID"
 }
 
+# Copy a finished build of the recipe as committed from another machine over ssh, so
+# `localbuild install` can install it here without building. The peer must have built
+# the same build ID (same pin, recipe and PKGBUILD) under the same path below $HOME.
+lb_cmd_fetch() {
+    local spec="" peer=""
+    while [ $# -gt 0 ]; do
+        case "$1" in --from) peer=${2:-}; shift 2 ;; *) spec=$1; shift ;; esac
+    done
+    [ -n "$spec" ] && [ -n "$peer" ] || die "usage: localbuild fetch <name>[@variant] --from <ssh host>"
+    lb_load "$spec"
+    [ "$KIND" = pkg ] || die "$LB_FULL: fetch only handles pkg recipes"
+    lb_recipe_clean || die "$LB_FULL: recipes/$LB_NAME has uncommitted changes; commit them first"
+    lb_source
+    if [ -f "$LB_WORK/DONE" ] && [ ! -f "$LB_WORK/DIRTY" ]; then
+        ln -sfn "$LB_ID" "$LB_LATEST"
+        say "$LB_FULL $LB_ID already here: $LB_WORK"
+        return 0
+    fi
+    # A local build of this ID that is unfinished or has edits stays as it is.
+    [ ! -e "$LB_WORK/src" ] || die "$LB_FULL: $LB_WORK has a local build; finish it with localbuild build"
+    case "$LB_WORK" in "$HOME"/*) ;; *) die "LB_CACHE must be under \$HOME to fetch" ;; esac
+    local rel=${LB_WORK#"$HOME"/}
+    # shellcheck disable=SC2029  # rel is meant to expand here
+    ssh -o BatchMode=yes "$peer" "test -f '$rel/DONE' && test ! -f '$rel/DIRTY'" \
+        || die "$LB_FULL: $peer has no finished clean build $LB_ID"
+    mkdir -p "$LB_WORK"
+    exec 9>"$LB_WORK.lock"
+    flock -n 9 || die "$LB_FULL: another build or fetch of $LB_ID is running"
+    rsync -a --delete "$peer:$rel/out/" "$LB_WORK/out.part/" || die "$LB_FULL: copy from $peer failed"
+    local info=$LB_WORK/out.part/BUILDINFO want
+    [ -f "$info" ] || die "$LB_FULL: $peer's build has no BUILDINFO"
+    for want in "id=$LB_ID" "pin=$PIN" "commit=$LB_COMMIT" "variant=$LB_VARIANT"; do
+        grep -qxF "$want" "$info" || die "$LB_FULL: $peer's BUILDINFO does not have $want"
+    done
+    ! grep -qx 'dirty=1' "$info" || die "$LB_FULL: $peer's build has unsaved edits"
+    ls "$LB_WORK"/out.part/*.pkg.tar.* >/dev/null 2>&1 || die "$LB_FULL: $peer's build has no package"
+    [ ! -e "$LB_WORK/out" ] || mv "$LB_WORK/out" "$LB_WORK/out.old.$$"
+    mv "$LB_WORK/out.part" "$LB_WORK/out"
+    printf '%s\n' "$peer" > "$LB_WORK/FETCHED"
+    touch "$LB_WORK/DONE"
+    ln -sfn "$LB_ID" "$LB_LATEST"
+    say "fetched $LB_FULL $LB_ID from $peer"
+}
+
 lb_cmd_rollback() {
     [ $# -ge 1 ] || die "usage: localbuild rollback <name>[@variant]"
     lb_load "$1"

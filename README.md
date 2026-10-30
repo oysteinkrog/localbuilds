@@ -60,6 +60,7 @@ contents and PKGBUILD. Two variants on the same Wine release get different IDs.
 ```
 localbuild status
 localbuild build <name>[@variant] [--dev]
+localbuild fetch <name>[@variant] --from <ssh host>
 localbuild install <name>[@variant]
 localbuild rollback <name>[@variant]
 localbuild shell <name>[@variant]
@@ -68,6 +69,11 @@ localbuild bump <name> <pin>
 localbuild check
 localbuild index
 ```
+
+`localbuild fetch` copies a finished build of a pkg recipe from another machine over ssh,
+so a second machine installs the same package without building it. Both machines need
+the same recipe commit: the build ID must match, and the copied `BUILDINFO` must name
+the same pin and commit. Then run `localbuild install` as usual.
 
 ## Changing a patched project
 
