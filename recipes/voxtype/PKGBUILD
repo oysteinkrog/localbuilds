@@ -1,14 +1,24 @@
 # Built by localbuild from the worktree in $LB_SRCDIR; not for use with plain makepkg.
-pkgname=voxtype-cuda-local
+# Variant cuda: the ONNX engines on an NVIDIA GPU. Variant cpu: the same engines on the CPU,
+# for a machine without NVIDIA. Both install to /usr/lib/voxtype-local, so one at a time.
+case "$LB_VARIANT" in
+    cuda) _ep=cuda; conflicts=(voxtype-cpu-local) ;;
+    cpu) _ep=cpu; conflicts=(voxtype-cuda-local) ;;
+    *) echo "PKGBUILD: unknown variant '$LB_VARIANT'" >&2; exit 1 ;;
+esac
+pkgname=voxtype-$_ep-local
 pkgver=$LB_PKGVER
 pkgrel=$LB_PKGREL
-pkgdesc="voxtype with CUDA ONNX engines (Cohere, Parakeet), engine_isolation and a live preview, built by localbuild"
+pkgdesc="voxtype with $_ep ONNX engines (Cohere, Parakeet), engine_isolation and a live preview, built by localbuild"
 arch=(x86_64)
 url="https://github.com/peteonrails/voxtype"
 license=(MIT)
 makedepends=(rustup cmake clang)
-# voxtype-bin ships the ONNX Runtime CUDA 13 libraries, the OSD and the helper scripts.
-depends=(voxtype-bin cuda cudnn gtk4 gtk4-layer-shell)
+# voxtype-bin ships the ONNX Runtime 1.24.4 libraries (a CUDA 13 build, which also runs
+# on the CPU alone), the OSD and the helper scripts.
+depends=(voxtype-bin gtk4 gtk4-layer-shell)
+[ "$_ep" = cuda ] && depends+=(cuda cudnn)
+provides=(voxtype-local)
 options=(!lto !debug !strip)
 
 _ortdir=/usr/lib/voxtype/cuda-13
@@ -19,6 +29,12 @@ build() {
     # ORT_CUDA_VERSION only feeds build.rs, which bakes the CUDA major into the runtime
     # probe; without it the binary rejects CUDA 13 hosts.
     export ORT_CUDA_VERSION=13
+    local features=parakeet-load-dynamic,onnx-load-dynamic,osd-gtk4,osd-vo
+    if [ "$_ep" = cuda ]; then
+        features+=,cohere-cuda,parakeet-cuda
+    else
+        features+=,cohere,parakeet
+    fi
     unset CFLAGS CXXFLAGS
     # One package for every machine: makepkg.conf.d/rust.conf may set
     # target-cpu=native, which ties the binary to the build host's CPU.
@@ -27,7 +43,7 @@ build() {
     # osd-gtk4 builds the overlay with the live preview text. The daemon starts the
     # voxtype-osd next to its own executable, so it must ship from this package.
     nice -n 5 cargo build --release --locked --bins \
-        --features cohere-cuda,parakeet-cuda,parakeet-load-dynamic,onnx-load-dynamic,osd-gtk4,osd-vo \
+        --features "$features" \
         --config 'profile.release.lto=false' \
         --config 'profile.release.codegen-units=8'
 }
