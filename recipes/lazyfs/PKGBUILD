@@ -1,0 +1,35 @@
+# Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
+# CMake fetches toml11 and spdlog during the build, so the build needs network access.
+pkgname=lazyfs-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="LazyFS, a FUSE file system that loses unsynced writes on demand (dsrhaslab/lazyfs), built by localbuild"
+arch=(x86_64)
+url="https://github.com/dsrhaslab/lazyfs"
+license=(MIT)
+depends=(glibc gcc-libs fuse3)
+makedepends=(cmake git)
+options=(!debug)
+
+# localbuild runs makepkg with --noextract, which skips prepare(), so everything is in build().
+# The tree is exported so the worktree stays clean. CMake 4 rejects the old minimum version
+# in toml11 v3.7.1, hence CMAKE_POLICY_VERSION_MINIMUM. libpcache.so goes to /usr/lib/lazyfs
+# and the lazyfs binary finds it through an rpath.
+build() {
+    mkdir -p lazyfs-src
+    git -C "$LB_SRCDIR" archive HEAD | tar -x -C lazyfs-src
+    cd lazyfs-src
+    (cd libs/libpcache && cmake -B build -DCMAKE_POLICY_VERSION_MINIMUM=3.5 && cmake --build build)
+    (cd lazyfs && cmake -B build -DLAZYFS_BUILD_TESTS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+        -DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath,/usr/lib/lazyfs && cmake --build build)
+}
+
+package() {
+    cd lazyfs-src
+    install -Dm755 lazyfs/build/lazyfs "$pkgdir/usr/bin/lazyfs"
+    install -d "$pkgdir/usr/lib/lazyfs"
+    cp -a libs/libpcache/build/libpcache.so* "$pkgdir/usr/lib/lazyfs/"
+    install -Dm644 lazyfs/config/default.toml "$pkgdir/usr/share/lazyfs/default.toml"
+    install -Dm755 lazyfs/scripts/mount-lazyfs.sh "$pkgdir/usr/share/lazyfs/mount-lazyfs.sh"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
