@@ -1,11 +1,12 @@
 #!/bin/bash
-# Regression check for the fork commit "readdir: do not pass FUSE_FILL_DIR_PLUS with a
-# size-less stat". Mounts LazyFS, writes a 32 KiB file without fsync, maps it shared (as
-# SQLite maps its -shm WAL index), lists the folder, then reads the mapping again.
-# Upstream 0.3.1 fails: the readdir sets the file's size to 0 and the read gets SIGBUS.
+# Regression check for the two fork commits on fix/shm-recreate. Upstream 0.3.1 fails both.
+# 1. readdir: mounts LazyFS, writes a 32 KiB file without fsync, maps it shared (as SQLite
+#    maps its -shm WAL index), lists the folder, then reads the mapping again. Upstream
+#    sets the file's size to 0 on readdir, and the read gets SIGBUS.
+# 2. statfs: the mount must report the backing file system's blocks. Upstream reports 0.
 #
 # Usage: check-readdir-mmap.sh [lazyfs binary]   (default /usr/bin/lazyfs)
-# Exit 0 when the mapping survives the readdir.
+# Exit 0 when both hold.
 set -u
 bin=${1:-/usr/bin/lazyfs}
 w=$(mktemp -d "${TMPDIR:-/var/tmp}/lazyfs-check.XXXXXX")
@@ -49,13 +50,17 @@ os.listdir(d)
 assert bytes(m[0:4]) == b"WAL!"
 PY
 rc=$?
+if [ "$rc" -eq 0 ] && [ "$(stat -f -c %b "$w/mnt")" -eq 0 ]; then
+    echo "FAIL: statfs on the mount reports 0 blocks"
+    rc=3
+fi
 
 fusermount3 -u "$w/mnt"
 wait "$pid" 2>/dev/null
 if [ "$rc" -eq 0 ]; then
-    echo "PASS: the shared mapping survives a readdir"
+    echo "PASS: the shared mapping survives a readdir, and statfs reports the backing space"
     rm -r "$w"
 else
-    echo "FAIL: the mapping broke after readdir (python exit $rc; 135 is SIGBUS); files in $w"
+    echo "FAIL: exit $rc (135: SIGBUS after readdir, 3: statfs); files in $w"
 fi
 exit "$rc"
