@@ -22,7 +22,8 @@ FUSE needs `user_allow_other` in `/etc/fuse.conf` when `allow_other` is used.
 
 | Branch | What it is |
 |---|---|
-| `local/0.3.1` | upstream tag 0.3.1 (`045a0b3a`), no local changes. This is what is built. |
+| `local/0.3.1` | upstream tag 0.3.1 (`045a0b3a`), no local changes. |
+| `fix/shm-recreate` | `local/0.3.1` plus one fix (`77e87106`): readdir no longer passes `FUSE_FILL_DIR_PLUS` with a stat that has no size. With it, any readdir set every open file's size to 0 in the kernel, and a shared mapping of an unsynced file (SQLite's `-shm`) got SIGBUS. This is what is built. `check-readdir-mmap.sh` checks it: `recipes/lazyfs/check-readdir-mmap.sh [lazyfs binary]` exits 0 on the fixed build and fails with SIGBUS on upstream 0.3.1. |
 
 ## Build notes
 
