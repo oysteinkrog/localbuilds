@@ -14,7 +14,7 @@ SRC=$HOME/projects/voxtype   # my forks live in ~/projects; ~/work until the off
 KIND=pkg
 # cuda: NVIDIA GPU (package voxtype-cuda-local). cpu: no NVIDIA (voxtype-cpu-local).
 VARIANTS="cuda cpu"
-PIN=ebca65135f5b3db8d6e5b49b30c8f27d51c4c224
+PIN=d9c6d4168b4e9240b22afa4ca569f25eea4a6aae
 
 lb_pkgver() {
     local ver
