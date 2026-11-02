@@ -1,0 +1,28 @@
+# Built by localbuild from the worktree in $LB_SRCDIR; not for use with plain makepkg.
+# Depends and build steps follow the AUR obs-backgroundremoval 1.4.1-1 PKGBUILD.
+pkgname=obs-backgroundremoval-cuda-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="OBS background removal plugin 1.4.1 with the ONNX Runtime CUDA provider, built by localbuild"
+arch=(x86_64)
+url="https://github.com/royshil/obs-backgroundremoval"
+license=(GPL-3.0-only)
+depends=(curl obs-studio onnxruntime-cuda opencv)
+makedepends=(cmake ninja)
+provides=(obs-backgroundremoval=1.4.1)
+conflicts=(obs-backgroundremoval)
+options=(!debug)
+
+build() {
+    cmake -B build -S "$LB_SRCDIR" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_CXX_FLAGS="-DHAVE_ONNXRUNTIME_CUDA_EP" \
+        -GNinja
+    cmake --build build
+}
+
+package() {
+    cmake --install build --prefix "$pkgdir/usr"
+}

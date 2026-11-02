@@ -1,0 +1,1 @@
+# No patches: the recipe only adds -DHAVE_ONNXRUNTIME_CUDA_EP in the PKGBUILD.
