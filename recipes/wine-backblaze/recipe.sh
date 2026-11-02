@@ -1,4 +1,4 @@
-# Wine 11.20 with the fixes Backblaze Personal needs, installed as a private copy.
+# Wine 11.21 with the fixes Backblaze Personal needs, installed as a private copy.
 #
 # Wine loads its builtin DLLs from its own library directory before WINEDLLPATH or the
 # prefix, so a patched builtin only works in a Wine install of its own. The build copies
@@ -6,15 +6,15 @@
 # branch changes, and wineserver, which most of the changes are in. Installs to
 # ~/.local/share/backblaze-wine/<build id>, with `current` pointing at the one in use.
 #
-# The changes are commits on branch backblaze/wine-11.20 of oysteinkrog/wine.
+# The changes are commits on branch backblaze/wine-11.21 of oysteinkrog/wine.
 
 UPSTREAM=https://gitlab.winehq.org/wine/wine.git
 FORK=https://github.com/oysteinkrog/wine.git
 MODE=fork
 KIND=tree
 SRC=$HOME/src/wine
-BASE=wine-11.20
-PIN=9630cdf7bf2d7f6d5e1c4287c54973b31115b05d
+BASE=wine-11.21
+PIN=c55b1312cea767226530ed8b4a6c80a5ad54947d
 
 lb_install_root() { echo "$HOME/.local/share/backblaze-wine"; }
 

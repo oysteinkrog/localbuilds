@@ -1,14 +1,16 @@
-# Wine 11.20 for Backblaze Personal, as a private copy
+# Wine 11.21 for Backblaze Personal, as a private copy
 
 This recipe builds the fork branch
-[`backblaze/wine-11.20`](https://github.com/oysteinkrog/wine/tree/backblaze/wine-11.20) of
+[`backblaze/wine-11.21`](https://github.com/oysteinkrog/wine/tree/backblaze/wine-11.21) of
 `oysteinkrog/wine` and installs it to `~/.local/share/backblaze-wine/<build id>/`, with
 `current` pointing at the one in use. Only the Backblaze prefix uses it.
 
 Most commits are Martyn Forryan's Wine patches from
 [iamfoz/backblaze-64-personal-wine-container](https://github.com/iamfoz/backblaze-64-personal-wine-container)
-(commit `b5387357`, `patches/`), written against wine-11.19. All of them apply to wine-11.20
-without changes. Each patch is one commit, and each runtime switch is a separate commit after
+(commit `b5387357`, `patches/`), written against wine-11.19. All of them applied to wine-11.20
+without changes. On 2026-11-03 the branch moved to wine-11.21 (the system Wine) as
+`backblaze/wine-11.21`; only the LocalSystem group commit needed a hand fix, for the new
+`create_token` signature. The old branch stays as `backblaze/wine-11.20`. Each patch is one commit, and each runtime switch is a separate commit after
 them, in the fork's order. Every change is off unless its environment variable is set, so this
 Wine behaves like stock Wine by default.
 
@@ -28,10 +30,11 @@ Wine behaves like stock Wine by default.
 | ntdll | `WINE_SHORTEN_SLEEP=4000:50` | Turns a non-alertable sleep of exactly the first number of ms into one of the second. The client pauses 4 s between chunks when it reads its own large files "to lighten disk I/O" (61 pauses at the start of each backup pass, 42 per file it re-reads for the server). It already runs at idle I/O priority. Other sleep lengths are untouched. Local commit, not from iamfoz |
 | wineserver | `WINE_SOCK_SNDBUF_AUTOTUNE=1` | Records the `SO_SNDBUF` a TCP socket asks for but does not pass it to the kernel, so Linux send-buffer autotuning stays on. The client asks for 64 KiB, which fixed each upload connection's buffer at 128 KiB: `ss` showed them sndbuf-limited about 90% of the time at about 5.5 Mbit/s over a 172 ms round trip. In a test the kernel buffer grew to 2.6 MB while `getsockopt` still returned 65536. Local commit, not from iamfoz |
 | ntdll | `WINE_SPAWN_NOCOPY=1` | Starts each new Windows process with `clone(CLONE_VM | CLONE_VFORK)` twice instead of `fork()` twice, so the parent's page tables are not copied. The middle and new processes make only system calls until `execve()`, with every signal blocked while they share memory. The Backblaze client starts an upload process for every batch, about every 1.4 s, and with 11 GB swapped out each `fork()` cost it about 0.5 s, a third of its time. In a test with 2 GB touched in the parent, 20 spawns took 94 ms against 1,456 ms, with the same cwd, environment, stdout and exit codes. Local commit, not from iamfoz |
+| ntdll | `WINE_IMAGE_SHADOW=1` | Shares PE sections whose file offset is not page-aligned. Such a section cannot be `mmap()`ed, so every process got a private `pread()` copy. With the switch, each section of 64 KiB or more is written once to `/dev/shm/wine-image-shadow-<uid>/` (named after the image's device, inode, mtime, size and the section's offset and length) and mapped copy-on-write from there. The Backblaze client starts a new `bztransmit.exe` per upload batch, and its 4.5 MB `.text` and 1.4 MB `.rdata` sit at file offsets 0x400 and 0x475800, so each upload process held 6 MB of private copies. Test: two processes of a program with a 2 MB `.rdata` went from 2,864 to 824 kB private memory each and mapped the same file. A process that loses the creation race maps the winner's file (`link()`, not `rename()`). Any failure falls back to `pread()`. Local commit, not from iamfoz |
 | ntdll | `WINE_MOUNTPOINTS_AS_DIRS=<letters>` or `1` | Shows mount points inside a drive as plain folders. Stock Wine reports them as reparse points, and Backblaze skips those |
 
 The system Wine must be the release the branch is based on (`BASE` in `recipe.sh`), because the
 build copies it and replaces only `wineserver` and the modules the branch changes.
 
-To change it: commit on the branch, `git push fork backblaze/wine-11.20`,
+To change it: commit on the branch, `git push fork backblaze/wine-11.21`,
 `localbuild bump wine-backblaze <commit>`, build, commit the recipe, install.
