@@ -40,7 +40,7 @@ lb_build() {
     mapfile -t mods < <(_wine_modules)
     echo "modules: ${mods[*]}"
     local targets=(); for m in "${mods[@]}"; do targets+=("dlls/$m/all"); done
-    make -C build -j"$(nproc)" "${targets[@]}"
+    make -C build -j"${JOB_CORES:-$(nproc)}" "${targets[@]}"
 
     # Stage a full copy of the system Wine, then lay the rebuilt modules over it.
     rm -rf out/bin out/lib out/share

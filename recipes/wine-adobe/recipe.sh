@@ -52,7 +52,7 @@ lb_build() {
     # wineserver too, when the branch changes it
     local server=0
     git -C "$LB_WORK/src" diff --quiet "$BASE" HEAD -- server || { server=1; targets+=(server/all); }
-    make -C build -j"$(nproc)" "${targets[@]}"
+    make -C build -j"${JOB_CORES:-$(nproc)}" "${targets[@]}"
 
     # Stage a full copy of the system Wine, then lay the rebuilt modules over it.
     rm -rf out/bin out/lib out/share
