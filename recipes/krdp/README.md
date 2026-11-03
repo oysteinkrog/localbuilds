@@ -50,6 +50,7 @@ real monitor; no virtual monitor and no RemoteAccess mode.
 | Video: H.265 4:4:4 from NVENC for clients that ask for it (VideoCodec=HEVC444) | a private codec of the FreeRDP fork (`RDPGFX_CODECID_HEVC444`): one H.265 Main 4:4:4 picture per frame instead of the two H.264 pictures of AVC444v2. Only the freerdp-client recipe's client asks for it, with `FREERDP_GFX_HEVC444=1`; every other client gets AVC444 |
 | SessionController: run the connect-time resize hook after the portal starts | the hook turned monitors off while the portal set up the screencast, and the portal then never answered: a black screen. Also ends a connection whose portal has not started after 15 s |
 | AbstractSession: do not send the client an empty clipboard | a server clipboard with no text (an image, files, the lock screen placeholder) reached the client as an empty text clipboard, so locking the server wiped the client clipboard and a copied image pasted as nothing |
+| PortalSession: subscribe to each portal Response before making the call (branch oystein/portal-response) | KRDP listened for the reply only after the call returned, so a fast reply could be lost and the login hung until the 15 s timeout (7 times from 2026-10-26 to 2026-11-03). Also closes a portal session that answers after its connection gave up, and logs each step |
 
 Upstream-Status: MR 239 submitted https://invent.kde.org/plasma/krdp/-/merge_requests/239;
 the fixes on top are local-only.
