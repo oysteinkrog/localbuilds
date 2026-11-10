@@ -1,4 +1,7 @@
-# MCP Agent Mail server and am CLI, upstream release, as the pacman package mcp-agent-mail-local
+# MCP Agent Mail server and am CLI, upstream release, as the pacman package mcp-agent-mail-local (retired)
+
+Retired on 2026-11-10: agent-mail was removed from the office desktop and the package
+uninstalled. This recipe stays for reference; do not install it.
 
 Upstream is `Dicklesworthstone/mcp_agent_mail_rust`; the fork is
 `oysteinkrog/mcp_agent_mail_rust`. The clone lives at `~/src/mcp-agent-mail`.
