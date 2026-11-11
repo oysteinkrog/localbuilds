@@ -1,0 +1,22 @@
+# Built by localbuild (binary mode): LB_PKGVER is the SDK version, LB_SHA512 its checksum.
+# Ships everything in Microsoft's tarball except host/fxr, the dotnet muxer and the licence
+# files, which extra's dotnet-host owns. The 11.0 runtimes and packs install under their own
+# version folders, so no file of the distro 10.0 packages is touched.
+pkgname=dotnet-sdk11-${LB_PKGVER##*.}-sxs
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc=".NET SDK $LB_PKGVER with its runtimes (Microsoft binary), installed beside the distro SDK"
+arch=(x86_64)
+url='https://dotnet.microsoft.com'
+license=(MIT)
+depends=('dotnet-host>=10.0.12')
+options=(!strip !debug)
+source=("https://builds.dotnet.microsoft.com/dotnet/Sdk/${pkgver}/dotnet-sdk-${pkgver}-linux-x64.tar.gz")
+sha512sums=("$LB_SHA512")
+noextract=("dotnet-sdk-${pkgver}-linux-x64.tar.gz")
+
+package() {
+    install -d "$pkgdir/usr/share/dotnet"
+    bsdtar -xf "$srcdir/dotnet-sdk-$pkgver-linux-x64.tar.gz" -C "$pkgdir/usr/share/dotnet" \
+        ./sdk ./sdk-manifests ./shared ./packs ./templates
+}
