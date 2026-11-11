@@ -10,7 +10,7 @@ The modules are not signed; this kernel does not enforce module signatures.
 | Fork branch | Commits | Why |
 |---|---|---|
 | `oystein/615.78.08-rmlock-yield` | 3 CachyOS patches from `CachyOS/kernel-patches` 7.3/misc/nvidia at 89bb22d (0001 DSC RC tables, 0002 Bigscreen Beyond WAR, 0004 sysfs config on 7.3), the same set the stock package applies | keep parity with linux-cachyos-nvidia-open 7.3.0-4 |
-| | 2 local commits (3e65278, 4167285) | KWin froze for 200 ms to 1.4 s while background GPU jobs (Wine MotionCatalyst, dotnet test hosts) freed their GPU objects under the global RM API write lock. See below. |
+| | 3 local commits (3e65278, 4167285, 565523d) | KWin froze for 200 ms to 1.4 s while background GPU jobs (Wine MotionCatalyst, dotnet test hosts) freed their GPU objects under the global RM API write lock. See below. |
 
 Upstream-Status: local-only.
 
@@ -21,7 +21,7 @@ Upstream-Status: local-only.
   slice when another thread waits for it. Only clients that are already disabled are sliced.
 - Bit 1 (default on): uncached and write-combined system memory is returned to the kernel
   from a worker thread (`nv_free_q`) after RM releases it, so `set_pages_array_wb` (a TLB
-  flush on every CPU) runs outside the RM locks. At most 4096 frees wait; the queue is drained
+  flush on every CPU) runs outside the RM locks. At most 256 MiB waits; the queue is drained
   before suspend and at module unload.
 
 Explicit user frees of a live Device are not sliced; they are still one hold, now without the
@@ -58,7 +58,7 @@ Needs a reboot, which ends the desktop session: only with Oystein's yes.
 5. Soak for a day: suspend and resume once, start and quit MotionCatalyst, a CUDA job, a game or
    video. Watch `free -g` and `/proc/meminfo` for memory that is not returned (the worker
    should keep up), and dmesg as in step 3.
-6. Optional second stage, bit 0: `options nvidia NVreg_RmLockRelief=3` in
+6. Optional second stage, bit 0 (Fable flagged an unaudited gap: refs left on the pending list between slices; audit `refAddDependant` callers for cross-client dependants first): `options nvidia NVreg_RmLockRelief=3` in
    `/etc/modprobe.d/nvidia-rmlock.conf`, rebuild the initramfs (`sudo mkinitcpio -P`), reboot,
    repeat steps 3 to 5. Look for exit-path holds (`rm_cleanup_file_private`) in `rmhold.bt`
    output; they should stop exceeding a few slices of 4 ms.
