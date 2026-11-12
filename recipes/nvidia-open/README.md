@@ -1,18 +1,41 @@
-NVIDIA open kernel modules 615.78.08 for linux-cachyos, with RM API lock relief, as linux-cachyos-nvidia-open-local.
+NVIDIA open kernel modules 620.70.06 for linux-cachyos, with RM API lock relief, as linux-cachyos-nvidia-open-local.
 
 It replaces linux-cachyos-nvidia-open (`provides=(NVIDIA-MODULE linux-cachyos-nvidia-open=<kernel>)`,
 `conflicts=(linux-cachyos-nvidia-open ...)`). It depends on the exact linux-cachyos and
 nvidia-utils versions it was built for, so pacman refuses a kernel or driver upgrade until the
 recipe is rebuilt (or the stock package is put back). The build flags are copied from the
-CachyOS linux-cachyos 7.3.0-4 PKGBUILD: clang, ld.lld, LLVM=1, modules compressed with zstd -19.
+CachyOS linux-cachyos 7.3.0-4 PKGBUILD (the same in 7.3.4): clang, ld.lld, LLVM=1, modules compressed with zstd -19.
 The modules are not signed; this kernel does not enforce module signatures.
 
 | Fork branch | Commits | Why |
 |---|---|---|
-| `oystein/615.78.08-rmlock-yield` | 3 CachyOS patches from `CachyOS/kernel-patches` 7.3/misc/nvidia at 89bb22d (0001 DSC RC tables, 0002 Bigscreen Beyond WAR, 0004 sysfs config on 7.3), the same set the stock package applies | keep parity with linux-cachyos-nvidia-open 7.3.0-4 |
-| | 3 local commits (3e65278, 4167285, 565523d) | KWin froze for 200 ms to 1.4 s while background GPU jobs (Wine MotionCatalyst, dotnet test hosts) freed their GPU objects under the global RM API write lock. See below. |
+| `oystein/620.70.06-rmlock-yield` | 3 CachyOS patches from `CachyOS/kernel-patches` 7.3/misc/nvidia at 89bb22d (0001 DSC RC tables, 0002 Bigscreen Beyond WAR, 0004 sysfs config on 7.3), the same set the stock package applies | keep parity with linux-cachyos-nvidia-open 7.3.3 |
+| | 3 local commits (5fdb9f2, 7226f26, 27abbfd), cherry-picked from the 615.78.08 branch (3e65278, 4167285, 565523d) | KWin froze for 200 ms to 1.4 s while background GPU jobs (Wine MotionCatalyst, dotnet test hosts) freed their GPU objects under the global RM API write lock. See below. |
 
 Upstream-Status: local-only.
+
+The 615.78.08 branch `oystein/615.78.08-rmlock-yield` (565523d) is kept for reference. The move to
+620.70.06 had one conflict: a neighbouring declaration in `nv-linux.h` (`NVreg_EnableUserNUMAManagement`
+became `NVreg_EnableNUMA`). The code bit 1 touches (`nv_free_pages`, `nv_alloc_t` flags, module
+init and exit, `nvidia_suspend`) has the same structure in 620. 620 adds `nv_inc_alloc_refcount` and
+`nv_dec_alloc_refcount`; the decrement never frees, so the deferred free still runs only when the
+count reaches zero in `nv_free_pages`. NVIDIA changed the locking in `serverFreeResourceTree` and the
+client entry code in 620, so bit 0 needs its audit redone on 620 before anyone turns it on.
+
+## Build before the kernel is installed
+
+The module builds against kernel headers. To have it ready before a `pacman -Syu` that moves the
+kernel and driver, build it against the extracted headers package of the target kernel:
+
+```sh
+mkdir -p /var/tmp/claude/upd-pkgs/hdr && cd /var/tmp/claude/upd-pkgs/hdr
+bsdtar -xf linux-cachyos-headers-<ver>-x86_64_v3.pkg.tar.zst   # downloaded from the mirror
+NVIDIA_KERNEL_BUILD=$PWD/usr/lib/modules/<uname>/build NVIDIA_KERNEL_PKGVER=<ver> \
+  NVIDIA_UTILS_PKGVER=<nvidia-utils ver> heavy-build localbuild build nvidia-open
+```
+
+The build ID then uses the target versions, so after the upgrade a plain
+`localbuild install nvidia-open` finds this build.
 
 ## The change (NVreg_RmLockRelief, default 0x2)
 
