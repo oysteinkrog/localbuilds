@@ -22,3 +22,9 @@ lb_check() {
         *) warn "powerdevil: the repos moved past powerdevil 6.8.1; rebase oystein/powerdevil-6.8.1-local (see recipes/powerdevil/README.md)" ;;
     esac
 }
+
+# Links KDE Frameworks and Plasma libraries: an upgrade of those must give a new
+# build ID, or localbuild reuses the old build (added for the Plasma 6.8.3 upgrade).
+lb_system_inputs() {
+    pacman -Q qt6-base kcoreaddons kconfig ki18n kio kidletime kwindowsystem libkscreen libplasma plasma-activities plasma-workspace 2>&1 || true
+}

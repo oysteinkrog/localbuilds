@@ -1,12 +1,12 @@
-Plasma Desktop 6.8.2 with a setting to turn off the lock screen wallpaper blur, as plasma-desktop-local.
+Plasma Desktop 6.8.3 with a setting to turn off the lock screen wallpaper blur, as plasma-desktop-local.
 
-It replaces the distro plasma-desktop package (`provides=(plasma-desktop=6.8.2)`,
+It replaces the distro plasma-desktop package (`provides=(plasma-desktop=6.8.3)`,
 `conflicts=(plasma-desktop)`). The build steps and dependencies are copied from the Arch
-plasma-desktop 6.8.2 PKGBUILD.
+plasma-desktop 6.8.3 PKGBUILD.
 
 | Fork branch | Commit | Why |
 |---|---|---|
-| `oystein/no-lockscreen-blur-6.8.2` | 1 commit on v6.8.2 | adds `blurWallpaper` to the lock screen config. The lock screen blurs, dims and recolours the wallpaper while the unlock prompt is shown, which hides the shader wallpaper. `blurWallpaper=false` in `[Greeter][LnF][General]` of `~/.config/kscreenlockerrc` keeps it sharp. The default is true, so upstream behaviour is unchanged |
+| `oystein/no-lockscreen-blur-6.8.3` | 1 commit on v6.8.3 | adds `blurWallpaper` to the lock screen config. The lock screen blurs, dims and recolours the wallpaper while the unlock prompt is shown, which hides the shader wallpaper. `blurWallpaper=false` in `[Greeter][LnF][General]` of `~/.config/kscreenlockerrc` keeps it sharp. The default is true, so upstream behaviour is unchanged |
 
 Upstream-Status: local-only, not sent upstream.
 

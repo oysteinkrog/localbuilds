@@ -15,3 +15,9 @@ lb_pkgver() {
     ver=$(sed -n 's/^set(PROJECT_VERSION "\(.*\)")/\1/p' "$LB_WORK/src/CMakeLists.txt")
     echo "${ver:-0}.g${LB_COMMIT:0:10}"
 }
+
+# Links KDE Frameworks and Plasma libraries: an upgrade of those must give a new
+# build ID, or localbuild reuses the old build (added for the Plasma 6.8.3 upgrade).
+lb_system_inputs() {
+    pacman -Q qt6-base kcoreaddons kconfig ki18n kcmutils kcrash kguiaddons kstatusnotifieritem kwindowsystem 2>&1 || true
+}

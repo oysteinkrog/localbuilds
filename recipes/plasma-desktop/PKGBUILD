@@ -1,9 +1,9 @@
 # Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
-# Build steps and depends copied from the Arch plasma-desktop 6.8.2 PKGBUILD.
+# Build steps and depends copied from the Arch plasma-desktop 6.8.3 PKGBUILD.
 pkgname=plasma-desktop-local
 pkgver=$LB_PKGVER
 pkgrel=$LB_PKGREL
-pkgdesc="KDE Plasma Desktop 6.8.2 with a setting to turn off the lock screen blur (oysteinkrog fork), built by localbuild"
+pkgdesc="KDE Plasma Desktop 6.8.3 with a setting to turn off the lock screen blur (oysteinkrog fork), built by localbuild"
 arch=(x86_64)
 url="https://github.com/oysteinkrog/plasma-desktop"
 license=(LGPL-2.0-or-later)
@@ -28,7 +28,7 @@ optdepends=('bluedevil: Bluetooth applet'
             'scim: kimpanel SCIM support')
 makedepends=(extra-cmake-modules intltool kaccounts-integration kdoctools libibus
              packagekit-qt6 scim wayland-protocols)
-provides=(plasma-desktop=6.8.2)
+provides=(plasma-desktop=6.8.3)
 conflicts=(plasma-desktop)
 groups=(plasma)
 options=(!debug)

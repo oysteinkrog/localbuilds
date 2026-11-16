@@ -25,3 +25,8 @@ dimming active. The fixed build logs `Lost DDC/CI brightness control for display
 `localbuild check` warns. Cherry-pick the commits onto the new tag, push as
 `oystein/powerdevil-<new>-local`, update the PKGBUILD from the Arch one,
 `localbuild bump powerdevil <commit>`, build and install.
+
+Still on 6.8.1 while the repos ship 6.8.3 (2026-11-16): the two ddcutil commits conflict with
+v6.8.3 in `daemon/controllers/kwinbrightness.cpp` and `screenbrightnesscontroller.cpp`. The
+6.8.1 code is rebuilt against each new Frameworks and Plasma release instead
+(`lb_system_inputs` changes the build ID when they move).
