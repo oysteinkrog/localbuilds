@@ -11,6 +11,7 @@ The modules are not signed; this kernel does not enforce module signatures.
 |---|---|---|
 | `oystein/620.70.06-rmlock-yield` | 3 CachyOS patches from `CachyOS/kernel-patches` 7.3/misc/nvidia at 89bb22d (0001 DSC RC tables, 0002 Bigscreen Beyond WAR, 0004 sysfs config on 7.3), the same set the stock package applies | keep parity with linux-cachyos-nvidia-open 7.3.3 |
 | | 3 local commits (5fdb9f2, 7226f26, 27abbfd), cherry-picked from the 615.78.08 branch (3e65278, 4167285, 565523d) | KWin froze for 200 ms to 1.4 s while background GPU jobs (Wine MotionCatalyst, dotnet test hosts) freed their GPU objects under the global RM API write lock. See below. |
+| | f82504b: the client shadow fault buffer is allocated with 4 KiB pages only | Upstream first asks for 2 MiB (order 9) blocks under the RM lock with `__GFP_RETRY_MAYFAIL`. On fragmented RAM that costs seconds of reclaim and compaction before the 4 KiB fallback runs. A CUDA context creation on 2026-11-16 made KWin wait 3.7 s. The 4 KiB path is the upstream fallback, so only the page size changes. |
 
 Upstream-Status: local-only.
 

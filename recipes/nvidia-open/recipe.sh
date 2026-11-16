@@ -17,7 +17,7 @@ FORK=https://github.com/oysteinkrog/open-gpu-kernel-modules.git
 SRC=$HOME/src/open-gpu-kernel-modules
 MODE=fork
 KIND=pkg
-PIN=27abbfd372e2f49428bd4267dd9020cb4b34e429
+PIN=f82504b15f125253977e872a6d5ea9836d40b18f
 
 lb_pkgver() {
     echo "620.70.06.r$(git -C "$LB_WORK/src" rev-list --count 620.70.06..HEAD).g${LB_COMMIT:0:10}"
