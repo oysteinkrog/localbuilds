@@ -13,7 +13,7 @@ pkgdesc="voxtype with $_ep ONNX engines (Cohere, Parakeet), engine_isolation and
 arch=(x86_64)
 url="https://github.com/peteonrails/voxtype"
 license=(MIT)
-makedepends=(rustup cmake clang)
+makedepends=(rustup cmake clang openssl-3)
 # voxtype-bin ships the ONNX Runtime 1.24.4 libraries (a CUDA 13 build, which also runs
 # on the CPU alone), the OSD and the helper scripts.
 # voxtype-osd-vo (osd-vo) links libxkbcommon for keyboard edits in the popup.
@@ -30,6 +30,12 @@ build() {
     # ORT_CUDA_VERSION only feeds build.rs, which bakes the CUDA major into the runtime
     # probe; without it the binary rejects CUDA 13 hosts.
     export ORT_CUDA_VERSION=13
+    # ort-sys's build script pulls in openssl-sys 0.9, which rejects OpenSSL 4
+    # (the system openssl since 2026-11). Point it at the openssl-3 package.
+    # Build script only: the installed binaries do not link OpenSSL.
+    if [ -d /usr/include/openssl-3 ]; then
+        export OPENSSL_LIB_DIR=/usr/lib/openssl-3 OPENSSL_INCLUDE_DIR=/usr/include/openssl-3
+    fi
     local features=parakeet-load-dynamic,onnx-load-dynamic,osd-gtk4,osd-vo
     if [ "$_ep" = cuda ]; then
         features+=,cohere-cuda,parakeet-cuda

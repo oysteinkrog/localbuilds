@@ -59,6 +59,10 @@ It takes about 20 s and peaks at 5.6 GB RSS.
 | Add engine_isolation | Run ONNX engines in a short-lived transcribe-worker subprocess |
 | Live preview | Stream Parakeet text to the OSD, type the engine model's final on release |
 | Live preview: join chunk text | Fix the running text and the streaming context sizes |
+| Live worker: keep it through a cancel | A cancel no longer kills the worker, so its CUDA context stays; CUDA EP uses HEURISTIC conv search and kSameAsRequested, with one warm-up run at load |
+
+The build needs the `openssl-3` package: openssl-sys 0.9 (in ort-sys's build script)
+rejects OpenSSL 4, so the PKGBUILD points it at `/usr/lib/openssl-3`.
 
 When moving to a new upstream tag, rebase the commits and check that the ORT version in
 `voxtype-bin` still matches the symlinks in the PKGBUILD.
