@@ -1,0 +1,50 @@
+# Built by localbuild from the fork worktree in $LB_SRCDIR; not for use with plain makepkg.
+# Build steps copied from the CachyOS linux-cachyos 7.3.0-4 PKGBUILD (unchanged in 7.3.4) (_build_nvidia_open),
+# which builds with clang (LTO kernel) and ships the modules uncompressed then zstd -19.
+pkgname=linux-cachyos-nvidia-open-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+# The module tree that belongs to the linux-cachyos package (not -lts).
+# NVIDIA_KERNEL_BUILD / NVIDIA_KERNEL_PKGVER build for a kernel that is not installed yet
+# (extracted linux-cachyos-headers package), see recipe.sh.
+if [ -n "${NVIDIA_KERNEL_BUILD:-}" ]; then
+    _kernsrc=$NVIDIA_KERNEL_BUILD
+    _kernuname=$(cat "$_kernsrc/version")
+    _kernpkgver=${NVIDIA_KERNEL_PKGVER:?set NVIDIA_KERNEL_PKGVER with NVIDIA_KERNEL_BUILD}
+else
+    _kernuname=$(for _d in /usr/lib/modules/*/; do [ "$(cat "$_d/pkgbase" 2>/dev/null)" = linux-cachyos ] && basename "$_d"; done | tail -1)
+    _kernsrc=/usr/lib/modules/$_kernuname/build
+    _kernpkgver=$(pacman -Q linux-cachyos | awk '{print $2}')
+fi
+pkgdesc="NVIDIA open modules 615.78.08 for linux-cachyos $_kernpkgver, with RM API lock relief (oysteinkrog fork), built by localbuild"
+arch=(x86_64)
+url="https://github.com/oysteinkrog/open-gpu-kernel-modules"
+license=('MIT AND GPL-2.0-only')
+depends=("linux-cachyos=$_kernpkgver" "nvidia-utils=615.78.08" libglvnd)
+makedepends=(clang lld llvm linux-cachyos-headers)
+provides=(NVIDIA-MODULE "linux-cachyos-nvidia-open=$_kernpkgver")
+conflicts=(linux-cachyos-nvidia-open linux-cachyos-nvidia linux-cachyos-nvidia-580xx)
+options=(!debug !strip)
+
+# localbuild runs makepkg with --noextract, which skips prepare(), so everything is in build().
+build() {
+    # The kernel-module build writes into the tree, so build from an export.
+    rm -rf nvopen && mkdir -p nvopen
+    git -C "$LB_SRCDIR" archive HEAD | tar -x -C nvopen
+    cd nvopen
+    CFLAGS= CXXFLAGS= LDFLAGS= make \
+        CC=clang LD=ld.lld LLVM=1 LLVM_IAS=1 \
+        KERNEL_UNAME="$_kernuname" IGNORE_PREEMPT_RT_PRESENCE=1 IGNORE_CC_MISMATCH=yes \
+        SYSSRC="$_kernsrc" SYSOUT="$_kernsrc" \
+        -j"$(nproc)" modules
+}
+
+package() {
+    cd nvopen
+    local modulesdir="$pkgdir/usr/lib/modules/$_kernuname/extramodules"
+    install -dm755 "$modulesdir"
+    install -m644 kernel-open/*.ko "$modulesdir"
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 COPYING
+    # Not signed: this kernel does not enforce module signatures (no MODULE_SIG_FORCE).
+    find "$pkgdir" -name '*.ko' -exec zstd --rm -19 -T0 {} +
+}
