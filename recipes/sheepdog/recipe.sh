@@ -15,7 +15,7 @@ UPSTREAM=https://github.com/kccarlos/herdr-sheepdog.git
 FORK=https://github.com/oysteinkrog/herdr-sheepdog.git
 MODE=fork
 KIND=tree
-PIN=f5c1bf32e8f95c19a74d39c1553ca25de140e921
+PIN=ca10ea85b38802d289e25b455a6c958f56f50ad8
 SRC=$HOME/projects/herdr-sheepdog   # my forks live in ~/projects
 
 lb_install_root() { echo "$HOME/.local/share/sheepdog-local"; }
