@@ -1,0 +1,16 @@
+# Built by localbuild (binary mode): LB_PKGVER is the ee release, LB_SHA512 its checksum.
+pkgname=ee-bin-local
+pkgver=$LB_PKGVER
+pkgrel=$LB_PKGREL
+pkgdesc="EideticEngine (ee) structured agent memory CLI, upstream release binary"
+arch=(x86_64)
+url='https://github.com/Dicklesworthstone/eidetic_engine_cli'
+license=(custom)
+provides=(ee)
+options=(!strip !debug)
+source=("ee-$pkgver.tar.xz::https://github.com/Dicklesworthstone/eidetic_engine_cli/releases/download/v$pkgver/ee-x86_64-unknown-linux-gnu.tar.xz")
+sha512sums=("$LB_SHA512")
+
+package() {
+    install -Dm755 "$srcdir/ee" "$pkgdir/usr/bin/ee"
+}
